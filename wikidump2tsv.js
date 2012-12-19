@@ -1,10 +1,6 @@
 var parseXMLDumps = require('./xml_dump_parser.js').parseXMLDumps;
 var spawn         = require('child_process').spawn;
 var fs            = require('fs');
-var ltx           = require('ltx');
-
-var PROCESS_POOL_SIZE = 6;
-var nrunning_jobs     = 0;
 
 var parens = {
     '(': ')',
@@ -65,13 +61,11 @@ function is_readable(text) {
     if (text.search(/^\|/) != -1) {
 	return false;
     }
+    if (text.search(/==/) != -1) {
+        return false;
+    }
     text = text.substr(0, 2) + "  ";
     return !(text[0] === '<' || text[0] === '#' || text.substr(0, 2) === '{{');
-}
-
-function cleanup(text) {
-    return unparen(text).
-	replace(/http[s]?:\/\/[\S]+/g, ' ');
 }
 
 function getText(element, trim) {
@@ -99,28 +93,6 @@ function getText(element, trim) {
     }
     return text;
 };
-
-function job2pool(cmd, args, stdin, cb) {
-    if (nrunning_jobs >= PROCESS_POOL_SIZE) {
-	process.stdin.pause();
-    }
-
-    var cp = spawn(cmd, args);
-    var cp_stdout = '';
-    ++nrunning_jobs;
-    cp.stdout.on('data', function(data) {
-	cp_stdout += String(data);
-    });
-    cp.on('exit', function(code) {
-	--nrunning_jobs;
-	if (nrunning_jobs < 2) {
-	    process.stdin.resume();
-	}
-	cb(code, cp_stdout);
-    });
-    cp.stdin.write(stdin);
-    cp.stdin.end();
-}
 
 function main() {
     var opts = require('tav').set({
@@ -197,57 +169,14 @@ function main() {
                         img = mi[1] || mi[3];
                     }
                 }
-                fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
+                if (_abstract) {
+                    fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
+                }
             }
-        }
 
-/****
-        job2pool('/usr/bin/php', [ './mw2html.php' ], noparens, function(code, stdout) {
-	    var nodes = { };
-	    var p = [ ];
-	    stdout = stdout.replace(/<b>/g, "<i>").replace(/<\/b>/g, "</i>")
-		.replace(/<span/g, "<i").replace(/<\/span>/g, "</i>");
-	    var prefix = stdout.split(/<\/p>/).slice(0, 7);
-	    while (prefix.length > 0 && prefix[prefix.length - 1].trim().length === 0) {
-		prefix.pop();
-	    }
-	    prefix = prefix.join('</p>') + '</p>\n';
-	    var xml_data = "<dummy>" + prefix + "</dummy>";
-	    var img      = '';
+        } // if (lines.length > 0)
 
-	    try {
-		nodes = ltx.parse(xml_data);
-		p = nodes.getChildren('p').slice(0, 6);
-		p = p.map(function(pnode) {
-		    var text = getText(pnode, false);
-		    var mi   = text.match(imageRE);
-		    // console.log(text);
-		    if (mi) {
-			// console.log(mi);
-			img = mi[1];
-			return '';
-		    }
-		    text = cleanup(getText(pnode, true)).trim();
-		    if (is_readable(text)) {
-			return text;
-			// return String(pnode);
-		    }
-		    return '';
-		}).filter(function(text) {
-		    return text.length > 0;
-		});
-	    } catch (ex) {
-		console.error("Exception:", ex.stack);
-		console.error("Input was:\n", xml_data + "\n ----- \n");
-	    }
-
-	    var _abstract = (p.length > 0 ? p[0] : '');
-	    fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
-        });
-***/
-
-
-    }
+    } // on_page()
 
     function on_end() {
     }

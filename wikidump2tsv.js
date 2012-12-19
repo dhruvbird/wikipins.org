@@ -6,6 +6,57 @@ var ltx           = require('ltx');
 var PROCESS_POOL_SIZE = 6;
 var nrunning_jobs     = 0;
 
+var parens = {
+    '(': ')',
+    '[': ']',
+    '{': '}',
+    '<': '>'
+};
+
+function unparen(title, text)  {
+    // console.log("WAS:", text);
+    text = text.replace(/\[\[([^\]\|]+)\]\]/g, '$1');
+    text = text.replace(/\[\[([^\|]+)\|([^\]\|]+)\]\]/g, '$2');
+    text = text.replace(/<ref[^\/]*\/>/g, ' ');
+    text = text.replace(/<ref[^>]*>/g, '{').replace(/<\/ref>/g, '}');
+    text = text.replace(/<div[^\/]*\/>/g, ' ');
+    text = text.replace(/<div[^>]*>/g, '{').replace(/<\/div>/g, '}');
+    text = text.replace(/<!--/g, '{').replace(/-->/g, '}');
+    text = text.replace(/'{2,10}/g, '');
+
+    if (title == 'Algeria') {
+        // console.log("IS:", text);
+    }
+
+    var out = [ ];
+    var i;
+    var pstk = [ ];
+    var posstk = [ ];
+    for (i = 0; i < text.length; ++i) {
+        if (parens.hasOwnProperty(text[i])) {
+            pstk.push(parens[text[i]]);
+            posstk.push(i);
+            // ncurly += (text[i] != '[' ? 1 : 0);
+        } else if (pstk.length === 0) {
+            if (title == 'Algeria') {
+                // console.log(i);
+            }
+            out.push(text[i]);
+        } else if (pstk[pstk.length - 1] === text[i]) {
+            pstk.pop();
+            posstk.pop();
+        } else if (pstk[pstk.length - 1] === '>' && i - posstk[posstk.length - 1] > 16) {
+            pstk.pop();
+            posstk.pop();
+        }
+    }
+    if (title == 'Algeria') {
+        // console.log("LENGTH:", pstk.length);
+        // console.log("RETURNING:", out.join(''));
+    }
+    return out.join('').replace(/\ ,/g, ',');
+}
+
 function is_readable(text) {
     text = text.trim();
     if (text.search(/File:|Image:/) != -1) {
@@ -19,8 +70,7 @@ function is_readable(text) {
 }
 
 function cleanup(text) {
-    return text.replace(/\([^\)]*\)/g, ' ').
-	replace(/<[^>]*>/g, ' ').
+    return unparen(text).
 	replace(/http[s]?:\/\/[\S]+/g, ' ');
 }
 
@@ -81,19 +131,23 @@ function main() {
         'category': {
             Note: 'The path of the output TSV for article abstracts and images (default: ./abstract.tsv)',
             value: './category.tsv'
+        },
+        'redirect': {
+            Note: 'The path of the output TSV for article redirects (default: ./redirect.tsv)',
+            value: './redirect.tsv'
         }
-    }, 'Process the Wikipedia XML Dump producing the abstract+images & the category TSV files');
+    }, 'Process the Wikipedia XML Dump producing the abstract+images, redirect & the category TSV files');
 
-    // opts['abstract']
-    // opts['category']
     process.stdin.resume();
 
     var abstract_out = fs.openSync(opts['abstract'], 'w');
     var category_out = fs.openSync(opts['category'], 'w');
+    var redirect_out = fs.openSync(opts['redirect'], 'w');
 
     var categoryRE = /\[\[Category:[^\]]+\]\]/g;
     var catNameRE  = /\[\[Category:([^\]]+)\]\]/;
-    var imageRE    = /File:([^\|]+)\|/;
+    var imageRE    = /File:([^\|\]]+)(\||\])|image[^=]*=[\s]*([^\n]+)/;
+    var redirectRE = /#REDIRECT (.+)/;
 
     function on_page(page) {
 	var title = page.getChildText('title');
@@ -111,9 +165,44 @@ function main() {
 	    fs.writeSync(category_out, categoryName + "\t" + title + "\n");
 	});
 
-	var tnext = text.split('}}\n\n').slice(1).join('}}\n\n');
+        var mi = text.match(imageRE);
+	var noparens = unparen(title, text);
+        var _abstract = '';
+        var img = '';
 
-	job2pool('/usr/bin/php', [ './mw2html.php' ], tnext, function(code, stdout) {
+        var lines = noparens.split('\n');
+
+        if (title == 'Algeria') {
+            // console.log(lines);
+        }
+
+        if (lines.length > 0) {
+            var mr = lines[0].match(redirectRE);
+            if (mr) {
+                fs.writeSync(redirect_out, title + "\t" + mr[1] + "\n");
+            } else {
+                for (var i = 0; i < lines.length; ++i) {
+                    if (title == 'Algeria' && i == 0) {
+                        // console.log(noparens);
+                    }
+	            if (is_readable(lines[i]) && lines[i].length > 32) {
+                        _abstract = lines[i];
+                        break;
+	            }
+                }
+                if (mi) {
+                    img = mi[1] || mi[3];
+                    mi = img.match(imageRE);
+                    if (mi) {
+                        img = mi[1] || mi[3];
+                    }
+                }
+                fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
+            }
+        }
+
+/****
+        job2pool('/usr/bin/php', [ './mw2html.php' ], noparens, function(code, stdout) {
 	    var nodes = { };
 	    var p = [ ];
 	    stdout = stdout.replace(/<b>/g, "<i>").replace(/<\/b>/g, "</i>")
@@ -151,9 +240,12 @@ function main() {
 		console.error("Exception:", ex.stack);
 		console.error("Input was:\n", xml_data + "\n ----- \n");
 	    }
+
 	    var _abstract = (p.length > 0 ? p[0] : '');
 	    fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
-	});
+        });
+***/
+
 
     }
 

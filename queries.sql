@@ -23,16 +23,17 @@ ALTER TABLE abstracts ADD INDEX (title);
 
 
 CREATE TABLE IF NOT EXISTS categories(category VARCHAR(200) NOT NULL,
-       title VARCHAR(200) NOT NULL
+       title VARCHAR(200) NOT NULL,
+       KEY (category)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+-- Make sure that category.tsv is sorted on the 'category' column, or
+-- the insert will take too long. Adding the index post import is also
+-- very slow with MyISAM.
 LOAD DATA LOCAL INFILE 'category.tsv'
      INTO TABLE categories
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
-
-ALTER TABLE categories ADD INDEX (category);
-
 
 
 

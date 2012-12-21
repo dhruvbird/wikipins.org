@@ -30,8 +30,8 @@ ALTER TABLE categories DISABLE KEYS;
 -- us since it results in a mostly sorted file, which is easily
 -- imported by MySQL.
 --
--- sort -k 1 categories.tsv > categories.tsv.sorted
-
+-- sort -k 1 category.tsv > category.tsv.sorted
+--
 -- Make sure that category.tsv is sorted on the 'category' column, or
 -- the insert will take too long. Adding the index post import is also
 -- very slow with MyISAM.

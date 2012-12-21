@@ -12,7 +12,23 @@ var parens = {
 var narticles  = 0;
 var nprocessed = 0;
 
-function unparen(title, text)  {
+function remove_paren_text(title, text) {
+    var out = [ ];
+    var i;
+    var pstk = [ ];
+    for (i = 0; i < text.length; ++i) {
+        if (parens.hasOwnProperty(text[i])) {
+            pstk.push(parens[text[i]]);
+        } else if (pstk.length === 0) {
+            out.push(text[i]);
+        } else if (pstk[pstk.length - 1] === text[i]) {
+            pstk.pop();
+        }
+    }
+    return out.join('').trim();
+}
+
+function cleanup(title, text)  {
     // console.log("WAS:", text);
     text = text.replace(/\[\[([^\]\|]+)\]\]/g, '$1');
     text = text.replace(/\[\[([^\|]+)\|([^\]\|]+)\]\]/g, '$2');
@@ -35,7 +51,6 @@ function unparen(title, text)  {
         if (parens.hasOwnProperty(text[i])) {
             pstk.push(parens[text[i]]);
             posstk.push(i);
-            // ncurly += (text[i] != '[' ? 1 : 0);
         } else if (pstk.length === 0) {
             if (title == 'Algeria') {
                 // console.log(i);
@@ -44,7 +59,12 @@ function unparen(title, text)  {
         } else if (pstk[pstk.length - 1] === text[i]) {
             pstk.pop();
             posstk.pop();
-        } else if (pstk[pstk.length - 1] === '>' && i - posstk[posstk.length - 1] > 16) {
+        } else if (pstk[pstk.length - 1] === '>' &&
+                   i - posstk[posstk.length - 1] > 20) {
+            // We might get stray < symbols which mean 'less than' and
+            // are not part of ann open tag, so we discard them if
+            // they remain open for too long. i.e. more than 20
+            // characters.
             pstk.pop();
             posstk.pop();
         }
@@ -53,7 +73,7 @@ function unparen(title, text)  {
         // console.log("LENGTH:", pstk.length);
         // console.log("RETURNING:", out.join(''));
     }
-    return out.join('').replace(/\ ,/g, ',');
+    return out.join('').replace(/\ ,/g, ',').trim();
 }
 
 function is_readable(text) {
@@ -128,22 +148,30 @@ function main() {
 
     var categoryRE = /\[\[Category:[^\]]+\]\]/g;
     var catNameRE  = /\[\[Category:([^\]]+)\]\]/;
-    var imageRE    = /File:([^\|\]]+)(\||\])|image[^=]*=[\s]*([^\n]+)/;
+    var imageRE    = /File:([^\|\]]+)(\||\])|image[^=]*=[\ \t]*([^\n]+)/;
     var redirectRE = /#REDIRECT (.+)/;
 
     function on_page(page) {
-	var title = page.getChildText('title');
-	var text  = page.getChild('revision').getChildText('text');
-        var ns    = page.getChildText('ns');
+	var title = page.getChildText('title').trim();
+	var text  = page.getChild('revision').getChildText('text').trim();
+        var ns    = page.getChildText('ns').trim();
 	var categories = text.match(categoryRE) || [ ];
+        narticles += 1;
+
+        if (title.length === 0) {
+            return;
+        }
+
 	if (categories) {
 	    categories = categories.map(function(category) {
-		return category.match(catNameRE)[1];
+		return category.match(catNameRE)[1].trim();
 	    }).filter(function(categoryName) {
-		return categoryName.search(/[\|\*]/) == -1;
+                // Filter out category names that are empty or have a
+                // | or a * character.
+		return categoryName.length > 0 &&
+                    categoryName.search(/[\|\*]/) == -1;
 	    });
 	}
-        narticles += 1;
 	// console.log(title, ns, categories);
         if (title === 'Algeria' && ns != 0) {
             console.error("not ns 0:", title, ns);
@@ -157,11 +185,11 @@ function main() {
 	});
 
         var mi = text.match(imageRE);
-	var noparens = unparen(title, text);
+	var text_cleaned = cleanup(title, text);
         var _abstract = '';
         var img = '';
 
-        var lines = noparens.split('\n').filter(function(line) {
+        var lines = text_cleaned.split('\n').filter(function(line) {
             return line.length > 0;
         });
 
@@ -195,6 +223,7 @@ function main() {
                     }
                 }
                 if (_abstract) {
+                    img = remove_paren_text(title, img);
                     fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
                     nprocessed += 1;
 

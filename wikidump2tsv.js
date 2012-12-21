@@ -9,6 +9,9 @@ var parens = {
     '<': '>'
 };
 
+var narticles  = 0;
+var nprocessed = 0;
+
 function unparen(title, text)  {
     // console.log("WAS:", text);
     text = text.replace(/\[\[([^\]\|]+)\]\]/g, '$1');
@@ -124,6 +127,7 @@ function main() {
     function on_page(page) {
 	var title = page.getChildText('title');
 	var text  = page.getChild('revision').getChildText('text');
+        var ns    = page.getChildText('ns');
 	var categories = text.match(categoryRE) || [ ];
 	if (categories) {
 	    categories = categories.map(function(category) {
@@ -132,7 +136,12 @@ function main() {
 		return categoryName.search(/[\|\*]/) == -1;
 	    });
 	}
-	// console.log(title, categories);
+        narticles += 1;
+	// console.log(title, ns, categories);
+        if (ns != 0) {
+            // Special page. Ignore me.
+            return;
+        }
 	categories.forEach(function(categoryName) {
 	    fs.writeSync(category_out, categoryName + "\t" + title + "\n");
 	});
@@ -152,6 +161,7 @@ function main() {
             var mr = lines[0].match(redirectRE);
             if (mr) {
                 fs.writeSync(redirect_out, title + "\t" + mr[1] + "\n");
+                nprocessed += 1;
             } else {
                 for (var i = 0; i < lines.length; ++i) {
                     if (title == 'Algeria' && i == 0) {
@@ -171,14 +181,19 @@ function main() {
                 }
                 if (_abstract) {
                     fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
-                }
-            }
+                    nprocessed += 1;
+
+                } // if (_abstract)
+
+            } // else
 
         } // if (lines.length > 0)
 
     } // on_page()
 
     function on_end() {
+        console.log("Processed " + String(nprocessed) + "/" +
+                    String(narticles) + " articles.");
     }
 
     parseXMLDumps(process.stdin, on_page, on_end);

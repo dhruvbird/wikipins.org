@@ -46,3 +46,10 @@ LOAD DATA LOCAL INFILE 'redirect.tsv' IGNORE
      INTO TABLE redirects
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
+
+
+-- Query to extract the Page Rank for Charle's script
+
+SELECT id, pagerank INTO OUTFILE '/tmp/TextDumps/enPageRank.txt'
+       FROM PageRank PR
+       WHERE dump_date = (SELECT MAX(dump_date) FROM PageRank WHERE language = 'en');

@@ -67,6 +67,9 @@ function is_readable(text) {
     if (text.search(/==/) != -1) {
         return false;
     }
+    if (text.search(/For the [^\.]+ see /) != -1) {
+        return false;
+    }
     text = text.substr(0, 2) + "  ";
     return !(text[0] === '<' || text[0] === '#' || text.substr(0, 2) === '{{');
 }

@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS categories(category VARCHAR(200) NOT NULL,
 -- Make sure that category.tsv is sorted on the 'category' column, or
 -- the insert will take too long. Adding the index post import is also
 -- very slow with MyISAM.
-LOAD DATA LOCAL INFILE 'category.tsv'
+LOAD DATA LOCAL INFILE 'category.tsv.sorted'
      INTO TABLE categories
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
@@ -47,9 +47,3 @@ LOAD DATA LOCAL INFILE 'redirect.tsv' IGNORE
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
 
-
--- Query to extract the Page Rank for Charle's script
-
-SELECT id, pagerank INTO OUTFILE '/tmp/TextDumps/enPageRank.txt'
-       FROM PageRank PR
-       WHERE dump_date = (SELECT MAX(dump_date) FROM PageRank WHERE language = 'en');

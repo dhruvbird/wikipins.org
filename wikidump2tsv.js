@@ -71,6 +71,10 @@ function is_readable(text) {
     return !(text[0] === '<' || text[0] === '#' || text.substr(0, 2) === '{{');
 }
 
+function trim_to_read(text) {
+    return text.replace(/^[^"'0-9a-zA-Z]+/, '').replace(/[^"'0-9a-zA-Z]+$/, '');
+}
+
 function getText(element, trim) {
     var text = "";
     if (trim && element.is && (element.is('a') || element.is('i'))) {
@@ -138,6 +142,9 @@ function main() {
 	}
         narticles += 1;
 	// console.log(title, ns, categories);
+        if (title === 'Algeria' && ns != 0) {
+            console.error("not ns 0:", title, ns);
+        }
         if (ns != 0) {
             // Special page. Ignore me.
             return;
@@ -151,10 +158,12 @@ function main() {
         var _abstract = '';
         var img = '';
 
-        var lines = noparens.split('\n');
+        var lines = noparens.split('\n').filter(function(line) {
+            return line.length > 0;
+        });
 
         if (title == 'Algeria') {
-            // console.log(lines);
+            // console.error(lines);
         }
 
         if (lines.length > 0) {
@@ -164,11 +173,14 @@ function main() {
                 nprocessed += 1;
             } else {
                 for (var i = 0; i < lines.length; ++i) {
+                    var line = trim_to_read(lines[i]);
                     if (title == 'Algeria' && i == 0) {
-                        // console.log(noparens);
+                        // console.error(lines);
+                        // console.error("LINE:", line);
                     }
-	            if (is_readable(lines[i]) && lines[i].length > 32) {
-                        _abstract = lines[i];
+
+	            if (line.length > 63 && is_readable(line)) {
+                        _abstract = line;
                         break;
 	            }
                 }

@@ -24,8 +24,8 @@ ALTER TABLE abstracts ENABLE KEYS;
 
 CREATE TABLE IF NOT EXISTS categories(category VARCHAR(200) NOT NULL,
        title VARCHAR(200) NOT NULL,
-       KEY (category),
-       KEY (title)
+       KEY (category, title),
+       KEY (title, category)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 ALTER TABLE categories DISABLE KEYS;
@@ -58,5 +58,4 @@ LOAD DATA LOCAL INFILE 'redirect.tsv' IGNORE
      INTO TABLE redirects
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
-
 

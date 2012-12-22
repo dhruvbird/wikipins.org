@@ -1,9 +1,14 @@
 use wikipins;
 
+DROP TABLE IF EXISTS abstracts;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS redirects;
+
+
 CREATE TABLE IF NOT EXISTS abstracts(title VARCHAR(200) NOT NULL,
        abstract TEXT NOT NULL,
        image VARCHAR(300) NOT NULL,
-       KEY INDEX (title)
+       KEY (title)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 ALTER TABLE abstracts DISABLE KEYS;

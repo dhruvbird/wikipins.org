@@ -24,8 +24,8 @@ ALTER TABLE abstracts ENABLE KEYS;
 
 
 
-CREATE TABLE IF NOT EXISTS categories(category VARCHAR(200) NOT NULL,
-       title VARCHAR(200) NOT NULL,
+CREATE TABLE IF NOT EXISTS categories(category VARCHAR(128) NOT NULL,
+       title VARCHAR(128) NOT NULL,
        KEY (category(50))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
@@ -53,8 +53,8 @@ ALTER TABLE categories ENABLE KEYS;
 
 
 
-CREATE TABLE IF NOT EXISTS title_categories(category VARCHAR(200) NOT NULL,
-       title VARCHAR(200) NOT NULL,
+CREATE TABLE IF NOT EXISTS title_categories(category VARCHAR(128) NOT NULL,
+       title VARCHAR(128) NOT NULL,
        KEY (title(50))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
@@ -70,7 +70,7 @@ ALTER TABLE title_categories ENABLE KEYS;
 
 
 
-CREATE TABLE IF NOT EXISTS category_list(category VARCHAR(200) NOT NULL,
+CREATE TABLE IF NOT EXISTS category_list(category VARCHAR(128) NOT NULL,
      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
      KEY (category(50))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;

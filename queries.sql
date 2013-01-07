@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS title_categories(category VARCHAR(200) NOT NULL,
 
 
 LOAD DATA LOCAL INFILE 'category.title.sorted.tsv'
-     INTO TABLE categories
+     INTO TABLE title_categories
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
 

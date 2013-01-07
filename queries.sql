@@ -3,6 +3,7 @@ use wikipins;
 DROP TABLE IF EXISTS abstracts;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS title_categories;
+DROP TABLE IF EXISTS category_list;
 DROP TABLE IF EXISTS redirects;
 
 
@@ -58,6 +59,13 @@ LOAD DATA LOCAL INFILE 'category.title.sorted.tsv'
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
 
+
+
+CREATE TABLE IF NOT EXISTS category_list(category VARCHAR(200) NOT NULL,
+       PRIMARY KEY (category(100))
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+
+INSERT INTO category_list (SELECT DISTINCT category FROM categories);
 
 
 

@@ -40,10 +40,15 @@ CREATE TABLE IF NOT EXISTS categories(category VARCHAR(200) NOT NULL,
 -- the insert will take too long. Adding the index post import is also
 -- very slow with MyISAM. Hence, we just use 2 tables to be done with
 -- things quickly.
+ALTER TABLE categories DISABLE KEYS;
+
 LOAD DATA LOCAL INFILE 'category.category.sorted.tsv'
      INTO TABLE categories
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
+
+ALTER TABLE categories ENABLE KEYS;
+
 
 
 
@@ -54,10 +59,14 @@ CREATE TABLE IF NOT EXISTS title_categories(category VARCHAR(200) NOT NULL,
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 
+ALTER TABLE title_categories DISABLE KEYS;
+
 LOAD DATA LOCAL INFILE 'category.title.sorted.tsv'
      INTO TABLE title_categories
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
+
+ALTER TABLE title_categories ENABLE KEYS;
 
 
 

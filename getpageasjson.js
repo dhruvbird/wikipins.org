@@ -1,10 +1,6 @@
 var util = require('./util.js');
 var _    = require('underscore');
 
-var LANG = 'en';
-var URL_TEMPLATE = '.wikipedia.org/wiki/Main_Page';
-var URL = 'http://' + LANG + URL_TEMPLATE;
-
 function is_interesting_link(title, url) {
     if (title.search(/^(Wikipedia:|mail:)/) == 0) {
         return false;

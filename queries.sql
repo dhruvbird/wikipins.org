@@ -25,7 +25,7 @@ ALTER TABLE abstracts ENABLE KEYS;
 
 CREATE TABLE IF NOT EXISTS categories(category VARCHAR(200) NOT NULL,
        title VARCHAR(200) NOT NULL,
-       PRIMARY KEY (category, title)
+       PRIMARY KEY (category(50), title(50))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 
@@ -49,7 +49,7 @@ LOAD DATA LOCAL INFILE 'category.category.sorted.tsv'
 
 CREATE TABLE IF NOT EXISTS title_categories(category VARCHAR(200) NOT NULL,
        title VARCHAR(200) NOT NULL,
-       PRIMARY KEY (title, category)
+       PRIMARY KEY (title(50), category(50))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 

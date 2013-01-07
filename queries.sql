@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS abstracts(title VARCHAR(200) NOT NULL,
        abstract TEXT NOT NULL,
        image VARCHAR(300) NOT NULL,
        KEY (title)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 ALTER TABLE abstracts DISABLE KEYS;
 
@@ -26,7 +26,7 @@ ALTER TABLE abstracts ENABLE KEYS;
 CREATE TABLE IF NOT EXISTS categories(category VARCHAR(200) NOT NULL,
        title VARCHAR(200) NOT NULL,
        PRIMARY KEY (category, title)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 
 -- Sort the categories.tsv file before importing.
@@ -50,7 +50,7 @@ LOAD DATA LOCAL INFILE 'category.category.sorted.tsv'
 CREATE TABLE IF NOT EXISTS title_categories(category VARCHAR(200) NOT NULL,
        title VARCHAR(200) NOT NULL,
        PRIMARY KEY (title, category)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 
 LOAD DATA LOCAL INFILE 'category.title.sorted.tsv'
@@ -66,7 +66,7 @@ LOAD DATA LOCAL INFILE 'category.title.sorted.tsv'
 CREATE TABLE IF NOT EXISTS redirects(fromtitle VARCHAR(200) NOT NULL,
        totitle VARCHAR(200) NOT NULL,
        PRIMARY KEY (fromtitle)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 LOAD DATA LOCAL INFILE 'redirect.tsv' IGNORE
      INTO TABLE redirects

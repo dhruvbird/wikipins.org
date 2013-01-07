@@ -24,28 +24,41 @@ ALTER TABLE abstracts ENABLE KEYS;
 
 CREATE TABLE IF NOT EXISTS categories(category VARCHAR(200) NOT NULL,
        title VARCHAR(200) NOT NULL,
-       KEY (category, title),
-       KEY (title, category)
+       PRIMARY KEY (category, title)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-ALTER TABLE categories DISABLE KEYS;
 
--- Sort the categories.tsv file before importing.  This sorts the file
--- categories.tsv according to the first word, but this is enough for
--- us since it results in a mostly sorted file, which is easily
--- imported by MySQL.
+-- Sort the categories.tsv file before importing.
 --
--- sort -k 1 -S 128M category.tsv > category.tsv.sorted
+-- TAB=`printf "\t"`
+-- sort -k 1 -t "$TAB" -S 300M category.tsv > category.category.sorted.tsv
+-- sort -k 2 -t "$TAB" -S 300M category.tsv > category.title.sorted.tsv
 --
 -- Make sure that category.tsv is sorted on the 'category' column, or
 -- the insert will take too long. Adding the index post import is also
--- very slow with MyISAM.
-LOAD DATA LOCAL INFILE 'category.tsv.sorted'
+-- very slow with MyISAM. Hence, we just use 2 tables to be done with
+-- things quickly.
+LOAD DATA LOCAL INFILE 'category.category.sorted.tsv'
      INTO TABLE categories
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
 
-ALTER TABLE categories ENABLE KEYS;
+
+
+
+CREATE TABLE IF NOT EXISTS title_categories(category VARCHAR(200) NOT NULL,
+       title VARCHAR(200) NOT NULL,
+       PRIMARY KEY (title, category)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+LOAD DATA LOCAL INFILE 'category.title.sorted.tsv'
+     INTO TABLE categories
+     FIELDS TERMINATED BY '\t'
+     LINES TERMINATED BY '\n';
+
+
+
 
 
 

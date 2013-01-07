@@ -104,7 +104,8 @@ function main() {
         },
         'keys': {
             Note: 'A Comma Separated List indexes (starting from 1) of the KEY that the input file is ' +
-                'sorted on. Optionally add suffix "s" or "n" to perform a String or Numeric comparison. ' +
+                'sorted on. Optionally add suffix "s", "i", or "n" to perform a String, Case-insensitive ' + 
+                'string or Numeric comparison. ' +
                 'The default prefix is "s". The input file *MUST* be sorted on this key. ' +
                 'e.g. --keys="1s,5n,3" (default: 1s)',
             value: '1s'

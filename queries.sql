@@ -70,13 +70,14 @@ INSERT INTO category_list (SELECT DISTINCT category FROM categories);
 
 
 
+-- Sort the redirects file on the 'fromtitle' colum before importing.
 
 CREATE TABLE IF NOT EXISTS redirects(fromtitle VARCHAR(200) NOT NULL,
        totitle VARCHAR(200) NOT NULL,
        PRIMARY KEY (fromtitle)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
-LOAD DATA LOCAL INFILE 'redirect.tsv' IGNORE
+LOAD DATA LOCAL INFILE 'redirect.fromtitle.sorted.tsv' IGNORE
      INTO TABLE redirects
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';

@@ -67,7 +67,7 @@ var get_random_category_images = (function(n, delay) {
 })(64, 10 * 60 * 1000);
 
 // Returns a set of up to 10 images for a given category.
-function get_category_images(category, cb) {
+function get_category_images(category, conn, cb) {
     /* SELECT image FROM categories C, abstracts A
      * WHERE
      * A.title = C.title AND
@@ -75,7 +75,7 @@ function get_category_images(category, cb) {
      * LENGTH(A.image) > 4
      * LIMIT 4
      */
-    var connection = get_conn();
+    connection = conn || get_conn();
     connection.query("SELECT image FROM categories C, abstracts A " +
                      "WHERE A.title = C.title AND C.category = ? AND LENGTH(A.image) > 4 LIMIT 10",
                      [ category ], function(err, rows, fields) {
@@ -89,7 +89,9 @@ function get_category_images(category, cb) {
                          });
                          cb(category, images);
                      });
-    connection.end();
+    if (!conn) {
+        connection.end();
+    }
 }
 
 // Returns a set of up to 8 images for the list of categories passed
@@ -97,15 +99,18 @@ function get_category_images(category, cb) {
 function get_multi_category_images(categories, cb) {
     var ctr = -1;
     var res = { };
+    var connection = get_conn();
+
     function next(category, images) {
         if (ctr > -1) {
             res[category] = images;
         }
         ctr += 1;
         if (ctr === categories.length) {
+            connection.end();
             cb(res);
         } else {
-            get_category_images(categories[ctr], next);
+            get_category_images(categories[ctr], connection, next);
         }
     }
     next('', []);

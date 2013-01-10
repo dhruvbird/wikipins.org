@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS category_list(category VARCHAR(128) NOT NULL,
      KEY (category(50))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
+set session sort_buffer_size = 200 * 1024 * 1024;
+
 INSERT INTO category_list(category) (SELECT DISTINCT category FROM categories);
 
 

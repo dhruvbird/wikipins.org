@@ -71,13 +71,14 @@ ALTER TABLE title_categories ENABLE KEYS;
 
 
 CREATE TABLE IF NOT EXISTS category_list(category VARCHAR(128) NOT NULL,
+     count INT NOT NULL,
      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
      KEY (category(50))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 set session sort_buffer_size = 200 * 1024 * 1024;
 
-INSERT INTO category_list(category) (SELECT DISTINCT category FROM categories);
+INSERT INTO category_list(category, count) (SELECT category, COUNT(*) FROM categories GROUP BY category);
 
 
 

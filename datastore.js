@@ -64,7 +64,7 @@ var get_random_category_images = (function(n, delay) {
             });
         });
     };
-})(64, 10 * 60 * 1000);
+})(128, 10 * 60 * 1000);
 
 // Returns a set of up to 10 images for a given category.
 function get_category_images(category, conn, cb) {

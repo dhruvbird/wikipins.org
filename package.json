@@ -14,7 +14,8 @@
     "node-expat": "~2.0.0",
     "ltx": "~0.2.2",
     "tav": "https://github.com/akaspin/tav/tarball/master",
-    "algorithm-js": "0.0.6"
+    "algorithm-js": "0.0.6",
+    "mysql": "~2.0.0-alpha3"
   },
   "devDependencies": {},
   "optionalDependencies": {},

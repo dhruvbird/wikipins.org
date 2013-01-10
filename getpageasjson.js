@@ -30,6 +30,42 @@ function multi_get_urls(urls, cb) {
     }
 }
 
+function get_main_page_snippets($, window) {
+    var snippets = $("#mw-content-text table table li").toArray();
+    var slinks   = snippets.map(function(li) {
+        li = $(li);
+        var a = li.find("a:first");
+        var ret = {
+            snippet: li.text()
+        };
+        if (a) {
+            href:  a.attr('href');
+            title: a.attr('title');
+        }
+    }).filter(function(h) {
+        return h.hasOwnProperty('href');
+    });
+}
+
+function get_main_page_links($, window) {
+    var main_page_links = $("td.MainPageBG b a").filter(function(i, x) {
+        var title = $(x).attr('title');
+        var href  = $(x).attr('href');
+        return is_interesting_link(title, href);
+    }).toArray();
+    var main_page_titles = main_page_links.map(function(link) {
+        return {
+            href:  $(link).attr('href'),
+            text:  $(link).text(),
+            title: $(link).attr('title')
+        };
+    });
+    main_page_titles = _.uniq(main_page_titles, false, function(link) {
+        return link.href;
+    });
+    return main_page_titles;
+}
+
 function get_main_page_titles(url, cb) {
     util.getURL(url, function(body, err) {
         if (err) {
@@ -40,23 +76,12 @@ function get_main_page_titles(url, cb) {
         // console.error("GOT PAGE");
 
         util.loadDOM(body, function($, window, errors) {
-            var main_page_links = $("td.MainPageBG b a").filter(function(i, x) {
-                var title = $(x).attr('title');
-                var href  = $(x).attr('href');
-                return is_interesting_link(title, href);
-            }).toArray();
-            var main_page_titles = main_page_links.map(function(link) {
-                return {
-                    href:  $(link).attr('href'),
-                    text:  $(link).text(),
-                    title: $(link).attr('title')
-                };
-            });
-            main_page_titles = _.uniq(main_page_titles, false, function(link) {
-                return link.href;
-            });
+
+            var main_page_links    = get_main_page_links($, window);
+            var main_page_snippets = get_main_page_snippets($, window);
+
             // console.error(main_page_titles);
-            cb(main_page_titles);
+            // FIXME: cb(main_page_titles);
         });
     });
 }

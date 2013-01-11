@@ -222,32 +222,47 @@ function get_multi_abstracts_by_title(titles, cb) {
 }
 
 
-/*
-suggest_categories("Pers", 10, function() {
-    console.log(arguments);
-});
-*/
+function test(which) {
+    if (which.suggest_categories) {
+        suggest_categories(which.suggest_categories, 10, function(suggested_categories) {
+            console.log("suggested_categories(", which.suggest_categories, ") = ", suggested_categories);
+        });
+    }
 
-/*
-get_multi_abstracts_by_title([ "Barack Obama", "Adolf Hitler", "Water" ], function() {
-    console.log(arguments);
-});
-*/
+    if (which.get_multi_abstracts_by_title) {
+        get_multi_abstracts_by_title(which.get_multi_abstracts_by_title, function(abstracts) {
+            console.log("get_multi_abstracts_by_title(", which.get_multi_abstracts_by_title, ") = ", abstracts);
+        });
+    }
 
-/*
-get_category_titles('13th-century deaths', function(titles) {
-    get_multi_abstracts_by_title(titles, function(abstracts) {
-        console.log(abstracts);
+    if (which.get_category_titles) {
+        get_category_titles(which.get_category_titles, function(titles) {
+            console.log("get_category_titles(", which.get_category_titles, ") = ", titles);
+            get_multi_abstracts_by_title(titles, function(abstracts) {
+                console.log("get_multi_abstracts_by_title(", titles, ") = ", abstracts);
+            });
+        });
+    }
+
+    if (which.get_multi_category_images) {
+        get_multi_category_images(which.get_multi_category_images, function(images) {
+            console.log("get_multi_category_images(", which.get_multi_category_images, ") = ", images);
+        });
+    }
+
+    if (which.get_random_category_images) {
+        get_random_category_images(function(rci) {
+            console.log("get_random_category_images() = ", rci);
+        });
+    }
+}
+
+if (require.main === module) {
+    test({
+        suggest_categories:           "Pers",
+        get_multi_abstracts_by_title: [ "Barack Obama", "Adolf Hitler", "Water" ],
+        get_category_titles:          '13th-century deaths',
+        get_multi_category_images:    ['13th-century deaths', '12th-century deaths'],
+        get_random_category_images:   true
     });
-});
-*/
-
-/*
-get_multi_category_images(['13th-century deaths', '12th-century deaths'], function() {
-    console.log(arguments);
-});
-*/
-
-get_random_category_images(function(rci) {
-    console.log(rci);
-});
+}

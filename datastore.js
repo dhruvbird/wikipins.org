@@ -57,7 +57,7 @@ var get_random_category_images = (function(n, delay) {
                 connection.end();
                 var categories = _.pluck(rows, 'category');
                 /* Get images for these categories */
-                get_multi_category_images(categories, function(res) {
+                get_multi_category_images_and_count(categories, function(res) {
                     cached = res;
                     cb(cached);
                 });
@@ -67,7 +67,7 @@ var get_random_category_images = (function(n, delay) {
 })(128, 10 * 60 * 1000);
 
 // Returns a set of up to 10 images for a given category.
-function get_category_images(category, conn, cb) {
+function get_category_images_and_count(category, conn, cb) {
     /* SELECT image FROM categories C, abstracts A
      * WHERE
      * A.title = C.title AND
@@ -76,8 +76,9 @@ function get_category_images(category, conn, cb) {
      * LIMIT 4
      */
     connection = conn || get_conn();
-    connection.query("SELECT image FROM categories C, abstracts A " +
-                     "WHERE A.title = C.title AND C.category = ? AND LENGTH(A.image) > 4 LIMIT 10",
+    connection.query("SELECT A.image AS image, CL.count AS count FROM categories C, abstracts A, category_list CL " +
+                     "WHERE A.title = C.title AND CL.category = C.category AND " +
+                     "C.category = ? AND LENGTH(A.image) > 4 LIMIT 10",
                      [ category ], function(err, rows, fields) {
                          if (err) {
                              console.error(err);
@@ -87,7 +88,11 @@ function get_category_images(category, conn, cb) {
                          var images = _.pluck(rows, 'image').filter(function(img) {
                              return img.search(/=/) == -1;
                          });
-                         cb(category, images);
+                         var count = rows.length > 0 ? rows[0].count : 0;
+                         cb(category, {
+                             images: images,
+                             count: count
+                         });
                      });
     if (!conn) {
         connection.end();
@@ -96,21 +101,21 @@ function get_category_images(category, conn, cb) {
 
 // Returns a set of up to 8 images for the list of categories passed
 // in.
-function get_multi_category_images(categories, cb) {
+function get_multi_category_images_and_count(categories, cb) {
     var ctr = -1;
     var res = { };
     var connection = get_conn();
 
-    function next(category, images) {
+    function next(category, images_count) {
         if (ctr > -1) {
-            res[category] = images;
+            res[category] = images_count;
         }
         ctr += 1;
         if (ctr === categories.length) {
             connection.end();
             cb(res);
         } else {
-            get_category_images(categories[ctr], connection, next);
+            get_category_images_and_count(categories[ctr], connection, next);
         }
     }
     next('', []);
@@ -140,9 +145,9 @@ function get_multi_categories_by_titles(titles, cb) {
        WHERE title IN ? GROUP BY category
     */
     var connection = get_conn();
-    connection.query("SELECT DISTINCT category, COUNT(*) as count FROM title_categories " +
-                     "WHERE title IN ? GROUP BY category",
-                     titles, function(err, rows, fields) {
+    connection.query("SELECT category, COUNT(*) as count FROM title_categories " +
+                     "WHERE title IN (?) GROUP BY category",
+                     [ titles ], function(err, rows, fields) {
                          cb(rows);
                      });
 }
@@ -250,6 +255,12 @@ function test(which) {
         });
     }
 
+    if (which.get_multi_categories_by_titles) {
+        get_multi_categories_by_titles(which.get_multi_categories_by_titles, function(categories) {
+            console.log("get_multi_categories_by_titles(", which.get_multi_categories_by_titles, ") = ", categories);
+        });
+    }
+
     if (which.get_random_category_images) {
         get_random_category_images(function(rci) {
             console.log("get_random_category_images() = ", rci);
@@ -259,10 +270,11 @@ function test(which) {
 
 if (require.main === module) {
     test({
-        suggest_categories:           "Pers",
-        get_multi_abstracts_by_title: [ "Barack Obama", "Adolf Hitler", "Water" ],
-        get_category_titles:          '13th-century deaths',
-        get_multi_category_images:    ['13th-century deaths', '12th-century deaths'],
-        get_random_category_images:   true
+        // suggest_categories:                  "Pers",
+        // get_multi_abstracts_by_title:        [ "Barack Obama", "Adolf Hitler", "Water" ],
+        // get_category_titles:                 '13th-century deaths',
+        // get_multi_category_images_and_count: ['13th-century deaths', '12th-century deaths'],
+        get_multi_categories_by_titles:      [ "Barack Obama", "George H. W. Bush", "Democrats", "Republicans", "Adolf Hitler", "Water" ]
+        // get_random_category_images:          true
     });
 }

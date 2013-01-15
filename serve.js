@@ -1,5 +1,6 @@
 var http    = require('http');
 var express = require('express');
+var fs      = require("fs");
 var app     = express();
 var ds      = require("./datastore.js");
 

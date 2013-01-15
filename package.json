@@ -15,7 +15,8 @@
     "ltx": "~0.2.2",
     "tav": "https://github.com/akaspin/tav/tarball/master",
     "algorithm-js": "0.0.6",
-    "mysql": "~2.0.0-alpha3"
+    "mysql": "~2.0.0-alpha3",
+    "express": "~3.0.6"
   },
   "devDependencies": {},
   "optionalDependencies": {},

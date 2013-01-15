@@ -1,6 +1,7 @@
 var mysql = require('mysql');
 var _     = require('underscore');
 
+var imageFileRE = /[^\|]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/i;
 
 
 
@@ -85,9 +86,10 @@ function get_category_images_and_count(category, conn, cb) {
                              cb(category, [ ]);
                              return;
                          }
-                         var images = _.pluck(rows, 'image').filter(function(img) {
-                             return img.search(/=/) == -1;
-                         });
+                         var images = _.pluck(rows, 'image').map(function(img) {
+                             var m = img.match(imageFileRE);
+                             return m ? m[0] : null;
+                         }).filter(function(img) { return !!img; });
                          var count = rows.length > 0 ? rows[0].count : 0;
                          cb(category, {
                              images: images,
@@ -152,11 +154,23 @@ function get_multi_categories_by_titles(titles, cb) {
                      });
 }
 
+function get_related_categories(category, cb) {
+    var connection = get_conn();
+    connection.query("SELECT category, COUNT(*) as count " +
+                     "FROM title_categories " +
+                     "WHERE title " +
+                     "IN (SELECT title FROM categories WHERE category = ?) " +
+                     "GROUP BY category", [ category ], function(err, rows, fields) {
+                         cb(rows);
+                     });
+    connection.end();
+}
+
 function get_category_titles(category, cb) {
     /* SELECT title FROM categories WHERE category = ? */
     var connection = get_conn();
     connection.query("SELECT title FROM categories WHERE category = ?",
-                     category, function(err, rows, fields) {
+                     [ category ], function(err, rows, fields) {
                          var categories = _.pluck(rows, 'title');
                          cb(categories);
                      });
@@ -266,6 +280,12 @@ function test(which) {
             console.log("get_random_category_images() = ", rci);
         });
     }
+
+    if (which.get_related_categories) {
+        get_related_categories(which.get_related_categories, function(rcat) {
+            console.log("get_related_categories(", which.get_related_categories, ") = ", rcat);
+        });
+    }
 }
 
 if (require.main === module) {
@@ -274,7 +294,16 @@ if (require.main === module) {
         // get_multi_abstracts_by_title:        [ "Barack Obama", "Adolf Hitler", "Water" ],
         // get_category_titles:                 '13th-century deaths',
         // get_multi_category_images_and_count: ['13th-century deaths', '12th-century deaths'],
-        get_multi_categories_by_titles:      [ "Barack Obama", "George H. W. Bush", "Democrats", "Republicans", "Adolf Hitler", "Water" ]
-        // get_random_category_images:          true
+        // get_multi_categories_by_titles:      [ "Barack Obama", "George H. W. Bush", "Democrats", "Republicans", "Adolf Hitler", "Water" ]
+        // get_random_category_images:          true,
+        get_related_categories:                 '13th-century deaths'
     });
 }
+
+exports.get_related_categories              = get_related_categories;
+exports.suggest_categories                  = suggest_categories;
+exports.get_multi_abstracts_by_title        = get_multi_abstracts_by_title;
+exports.get_category_titles                 = get_category_titles;
+exports.get_multi_category_images_and_count = get_multi_category_images_and_count;
+exports.get_multi_categories_by_titles      = get_multi_categories_by_titles;
+exports.get_random_category_images          = get_random_category_images;

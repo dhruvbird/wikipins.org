@@ -19,7 +19,7 @@ function get_conn() {
 
 var get_random_category_images = (function(n, delay) {
     var cached = { };
-    var prev_ts = new Date() - delay - 100000;
+    var prev_ts = new Date() - delay - 1000;
     return function(cb) {
         if (new Date() - prev_ts < delay) {
             cb(cached);
@@ -60,6 +60,7 @@ var get_random_category_images = (function(n, delay) {
                 /* Get images for these categories */
                 get_multi_category_images_and_count(categories, function(res) {
                     cached = res;
+                    prev_ts = new Date();
                     cb(cached);
                 });
             });

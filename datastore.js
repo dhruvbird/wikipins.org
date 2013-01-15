@@ -156,11 +156,11 @@ function get_multi_categories_by_titles(titles, cb) {
 
 function get_related_categories(category, cb) {
     var connection = get_conn();
-    connection.query("SELECT category, COUNT(*) as count " +
-                     "FROM title_categories " +
-                     "WHERE title " +
-                     "IN (SELECT title FROM categories WHERE category = ?) " +
-                     "GROUP BY category", [ category ], function(err, rows, fields) {
+    connection.query("SELECT TC.category AS category, COUNT(*) as count " +
+                     "FROM title_categories TC JOIN categories C " +
+                     "ON C.title=TC.title " +
+                     "WHERE C.category = ? " +
+                     "GROUP BY category ORDER BY count DESC", [ category ], function(err, rows, fields) {
                          cb(rows);
                      });
     connection.end();

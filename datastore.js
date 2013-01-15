@@ -295,7 +295,7 @@ if (require.main === module) {
         // get_category_titles:                 '13th-century deaths',
         // get_multi_category_images_and_count: ['13th-century deaths', '12th-century deaths'],
         // get_multi_categories_by_titles:      [ "Barack Obama", "George H. W. Bush", "Democrats", "Republicans", "Adolf Hitler", "Water" ]
-        // get_random_category_images:          true,
+        get_random_category_images:          true,
         get_related_categories:                 '13th-century deaths'
     });
 }

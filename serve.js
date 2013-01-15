@@ -54,4 +54,14 @@ app.get("/related_categories[/]?", function(req, res) {
     });
 });
 
+app.get("/", function(req, res) {
+    var index_path = require.resolve("./index.html");
+    var index_fd = fs.openSync(index_path, 'r');
+    var index_stream = fs.createReadStream(index_path, {
+        fd: index_fd,
+        encoding: 'utf8'
+    });
+    index_stream.pipe(res);
+});
+
 app.listen(8080);

@@ -1,7 +1,20 @@
 <html>
   <head>
     <title>Wikipins.org</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
   </head>
+
   <body>
+    <script type="text/javascript">
+      $().ready(function() {
+          $.ajax({
+              url:  "/random_categories/",
+              jsonp: true,
+              success: function(data) {
+                  console.log(data);
+              }
+          });
+      });
+    </script>
   </body>
 </html>

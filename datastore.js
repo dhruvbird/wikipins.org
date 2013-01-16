@@ -2,7 +2,13 @@ var mysql = require('mysql');
 var _     = require('underscore');
 
 var imageFileRE = /[^\|]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/i;
+var redundantPrefixRE = /^(Image|File):/i;
 
+function clean_image_name(name) {
+    name = name.replace(redundantPrefixRE, '');
+    var m = name.match(imageFileRE);
+    return m ? m[0] : null;
+}
 
 
 function get_conn() {
@@ -66,7 +72,7 @@ var get_random_category_images = (function(n, delay) {
             });
         });
     };
-})(128, 10 * 60 * 1000);
+})(128, 30 * 60 * 1000);
 
 // Returns a set of up to 10 images for a given category.
 function get_category_images_and_count(category, conn, cb) {
@@ -87,10 +93,8 @@ function get_category_images_and_count(category, conn, cb) {
                              cb(category, [ ]);
                              return;
                          }
-                         var images = _.pluck(rows, 'image').map(function(img) {
-                             var m = img.match(imageFileRE);
-                             return m ? m[0] : null;
-                         }).filter(function(img) { return !!img; });
+                         var images = _.pluck(rows, 'image').map(clean_image_name)
+                             .filter(function(img) { return !!img; });
                          var count = rows.length > 0 ? rows[0].count : 0;
                          cb(category, {
                              images: images,

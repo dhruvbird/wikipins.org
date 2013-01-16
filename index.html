@@ -2,16 +2,235 @@
   <head>
     <title>Wikipins.org</title>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="http://www.wookmark.com/js/jquery.wookmark.js"></script>
+    <script type="text/javascript" src="http://pajhome.org.uk/crypt/md5/md5.js"></script>
+    <script type="text/javascript">
+    // $('img.photo',this).imagesLoaded(myFunction)
+    // execute a callback when all images have loaded.
+    // needed because .load() doesnt work on cached images
+
+    // Modified with a two-pass approach to changing image
+    // src. First, the proxy imagedata is set, which leads
+    // to the first callback being triggered, which resets
+    // imagedata to the original src, which fires the final,
+    // user defined callback.
+
+    // modified by yiannis chatzikonstantinou.
+
+    // original:
+    // mit license. paul irish. 2010.
+    // webkit fix from Oren Solomianik. thx!
+
+    // callback function is passed the last image to load
+    // as an argument, and the collection as `this`
+
+    $.fn.imagesLoaded = function( callback ){
+        var elems = this.find( 'img' ),
+        elems_src = [],
+        self = this,
+        len = elems.length;
+
+        if ( !elems.length ) {
+            callback.call( this );
+            return this;
+        }
+
+        elems.one('load error', function() {
+            if ( --len === 0 ) {
+                // Rinse and repeat.
+                len = elems.length;
+                elems.one( 'load error', function() {
+                    if ( --len === 0 ) {
+                        callback.call( self );
+                    }
+                }).each(function() {
+                    this.src = elems_src.shift();
+                });
+        }
+        }).each(function() {
+            elems_src.push( this.src );
+            // webkit hack from http://groups.google.com/group/jquery-dev/browse_thread/thread/eee6ab7b2da50e1f
+            // data uri bypasses webkit log warning (thx doug jones)
+            this.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+        });
+        
+        return this;
+    };
+    </script>
+    <style type="text/css">
+      body {
+          background-color: #DDDDDD;
+          font-family: sans-serif;
+          margin: 20px;
+
+      }
+      h2 {
+          margin-bottom: 15px;
+          font-size: 40px;
+      }
+      #header span {
+          font-size: 18px;
+      }
+      #header {
+          margin-bottom: 15px;
+      }
+      #pin-template {
+          display: none;
+      }
+      div.pin {
+          width: 240px;
+          padding: 15px 15px 15px 15px;
+          margin: 10px 0px 10px 0px;
+          box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
+          -webkit-box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
+          background-color: #FFFFFF;
+      }
+      .clear-both {
+          clear: both;
+      }
+      #content {
+          position: relative;
+      }
+      .category-name {
+          font-weight: bold;
+          font-size: 20px;
+          text-align: center;
+          margin-bottom: 5px;
+      }
+    </style>
   </head>
 
   <body>
+    <div id="header">
+      <center>
+        <h2>Wikipins</h2>
+        <span>A graphical wikipedia navigation experience!</span>
+      </center>
+    </div>
+    <div id="content">
+    </div>
+    <div id="content-data">
+    </div>
+    <div id="pin-template">
+      <div class="category-name"></div>
+      <div class="image"></div>
+    </div>
     <script type="text/javascript">
+      function get_image_url(file_name, width, ns) {
+          ns = ns || 'commons'
+          file_name = file_name.replace(/\ /g, "_");
+          var md5sum = hex_md5(file_name);
+          var thumb_name = width + "-" + file_name;
+          if (file_name.search(/\.svg$/i) != -1) {
+              thumb_name += ".png";
+          }
+          var img_url = "http://upload.wikimedia.org/wikipedia/" + ns +
+              "/thumb/" + md5sum[0] + "/" +
+              md5sum.substr(0, 2) + "/" +
+              file_name + "/" + thumb_name;
+          return img_url;
+      }
+
+      function on_image_loaded() {
+          // console.log(arguments);
+      }
+      function on_image_error_01() {
+          var img = $(this);
+          console.log("[1] Error loading:", img.data('img-name'));
+          img.off('error')
+              .on('error', on_image_error_02);
+          img.attr('src', get_image_url(img.data('img-name'),
+                                        "100px",
+                                        'commons'
+                                       ));
+      }
+
+      function on_image_error_02() {
+          var img = $(this);
+          console.log("[2] Error loading:", img.data('img-name'));
+          img.off('error');
+          img.attr('src', get_image_url(img.data('img-name'),
+                                        img.data('img-width'),
+                                        'en'
+                                       ));
+      }
+
+      function item_cmp(lhs, rhs) {
+          return rhs.images.length = rhs.images.length;
+      }
+
+      function filter_empty_item(item) {
+          return item.images.length > 0;
+      }
+
+      function get_pin_div(item) {
+          var div = $("#pin-template").clone()
+              .attr("id", null)
+              .addClass("pin");
+          div.find('.category-name').html(item.category);
+          var images = item.images.slice(0,4);
+          if (images.length === 2) {
+              images = images.slice(0, 1);
+          }
+          var sm_width = String(240 / (images.length - 1)) + "px";
+          var imgs = images.map(function(img_name, idx) {
+              var img_width = idx > 0 ? sm_width : "240px";
+              var img_url = get_image_url(img_name, img_width);
+              var img  = $("<img />").attr('src', img_url)
+                  .attr('width', img_width)
+                  .addClass('pin-image')
+                  .on('load', on_image_loaded)
+                  .on('error', on_image_error_01);
+              if (idx > 0) {
+                  img.attr('height', img_width);
+              }
+              img.data('img-name', img_name);
+              img.data('img-width', img_width);
+              return img;
+          });
+          var bigger =  $("<div></div>").addClass("bigger");
+          var smaller = $("<div></div>").addClass("smaller");
+          bigger.append(imgs[0]);
+          imgs.slice(1).forEach(function(img) {
+              img.attr('float', 'left');
+              smaller.append(img);
+          });
+          div.find(".image").append(bigger);
+          if (imgs.length > 1) {
+              smaller.append($("<div></div>").addClass("clear-both"));
+              div.find(".image").append(smaller);
+          }
+          return div;
+      }
+
       $().ready(function() {
           $.ajax({
               url:  "/random_categories/",
-              jsonp: true,
+              dataType: 'jsonp',
               success: function(data) {
                   console.log(data);
+                  var a = [ ];
+                  var key;
+                  for (key in data) {
+                      var item = data[key];
+                      a.push({
+                          category: key,
+                          count: item.count,
+                          images: item.images
+                      });
+                  }
+                  a = a.filter(filter_empty_item);
+                  a.sort(item_cmp);
+                  a.forEach(function(item) {
+                      var div  = get_pin_div(item);
+                      $("#content").append(div);
+                  });
+                  $("#content").imagesLoaded(function() {
+                      $("#content .pin").wookmark({
+                          offset: 15,
+                          itemWidth: 270
+                      });
+                  });
               }
           });
       });

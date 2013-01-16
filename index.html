@@ -329,6 +329,8 @@
           var m1 = window.location.pathname.match(/^\/c\/([^\/]+)\/?$/);
           if (m1) {
               var category = unescape(m1[1]);
+              $("#header h2").html(category);
+              $("#header center span").remove();
               load_category_pins(category);
           } else {
               load_category_list("/random_categories/");

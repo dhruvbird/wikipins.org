@@ -12,6 +12,8 @@ var parens = {
 var narticles  = 0;
 var nprocessed = 0;
 
+var imageFileRE = /[^\|\[\]=]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/i;
+
 function remove_paren_text(title, text) {
     var out = [ ];
     var i;
@@ -148,7 +150,7 @@ function main() {
 
     var categoryRE = /\[\[Category:[^\]]+\]\]/g;
     var catNameRE  = /\[\[Category:([^\]]+)\]\]/;
-    var imageRE    = /File:([^\|\]]+)(\||\])|image[^=]*=[\ \t]*([^\n]+)/;
+    var imageRE    = /File:([^\|\]]+)(\||\])|image[^=]*=[\ \t]*([^\n\|]+)|Cover[^=]*=[\ \t]*([^\n\|]+)/i;
     var redirectRE = /#REDIRECT (.+)/;
 
     function on_page(page) {

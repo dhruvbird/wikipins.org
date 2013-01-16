@@ -7,7 +7,7 @@ var redundantPrefixRE = /^(Image|File):/i;
 function clean_image_name(name) {
     name = name.replace(redundantPrefixRE, '');
     var m = name.match(imageFileRE);
-    return m ? m[0] : null;
+    return m ? m[0] : '';
 }
 
 
@@ -27,11 +27,17 @@ var get_random_category_images = (function(n, delay) {
     var cached = { };
     var prev_ts = new Date() - delay - 1000;
     return function(cb) {
+        var invoked_cb = false;
         if (new Date() - prev_ts < delay) {
             cb(cached);
             return;
         }
 
+        if (Object.keys(cached).length > 0) {
+            // Return cached data, but perform computation.
+            invoked_cb = true;
+            cb(cached);
+        }
         /* Get # of elements in the category_list table.
          *
          * SELECT COUNT(*) AS count FROM category_list
@@ -45,7 +51,9 @@ var get_random_category_images = (function(n, delay) {
         connection.query('SELECT COUNT(*) AS count FROM category_list', function(err, rows, fields) {
             if (err) {
                 console.error(err.stack);
-                cb(err);
+                if (!invoked_cb) {
+                    cb(err);
+                }
                 return;
             }
             var row_count = rows[0].count;
@@ -58,7 +66,9 @@ var get_random_category_images = (function(n, delay) {
             connection.query('SELECT CL.category AS category FROM category_list CL WHERE CL.id IN (?)', [ rids ], function(err, rows, fields) {
                 if (err) {
                     console.error(err.stack);
-                    cb(err);
+                    if (!invoked_cb) {
+                        cb(err);
+                    }
                     return;
                 }
                 connection.end();
@@ -67,7 +77,9 @@ var get_random_category_images = (function(n, delay) {
                 get_multi_category_images_and_count(categories, function(res) {
                     cached = res;
                     prev_ts = new Date();
-                    cb(cached);
+                    if (!invoked_cb) {
+                        cb(cached);
+                    }
                 });
             });
         });
@@ -151,6 +163,10 @@ function get_multi_categories_by_titles(titles, cb) {
     /* SELECT category, COUNT(*) as count FROM title_categories
        WHERE title IN ? GROUP BY category
     */
+    if (titles.length === 0) {
+        cb([]);
+        return;
+    }
     var connection = get_conn();
     connection.query("SELECT category, COUNT(*) as count FROM title_categories " +
                      "WHERE title IN (?) GROUP BY category",
@@ -188,6 +204,10 @@ function get_multi_abstracts_by_title_redirect(titles, cb) {
        (SELECT totitle FROM redirects WHERE fromtitle IN ?) R 
        WHERE R.totitle = A.title;
     */
+    if (titles.length === 0) {
+        cb([]);
+        return;
+    }
     var connection = get_conn();
     connection.query("SELECT A.title AS title , A.abstract AS abstract, A.image AS image " +
                      "FROM abstracts A, " +
@@ -198,6 +218,10 @@ function get_multi_abstracts_by_title_redirect(titles, cb) {
                              console.error(err);
                              return;
                          }
+                         rows = rows.map(function(row) {
+                             row.image = clean_image_name(row.image);
+                             return row;
+                         });
                          cb(rows);
                      });
     connection.end();
@@ -207,6 +231,10 @@ function get_multi_abstracts_by_title_noredirect(titles, cb) {
     /* SELECT A.title AS title , A.abstract AS abstract, A.image AS image
        FROM abstracts A WHERE A.title IN ?;
     */
+    if (titles.length === 0) {
+        cb([]);
+        return;
+    }
     var connection = get_conn();
     connection.query("SELECT A.title AS title, A.abstract AS abstract, A.image AS image " +
                      "FROM abstracts A WHERE A.title IN (?)",
@@ -215,6 +243,10 @@ function get_multi_abstracts_by_title_noredirect(titles, cb) {
                              console.error(err);
                              return;
                          }
+                         rows = rows.map(function(row) {
+                             row.image = clean_image_name(row.image);
+                             return row;
+                         });
                          cb(rows);
                      });
     connection.end();

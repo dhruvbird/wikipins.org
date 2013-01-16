@@ -15,7 +15,7 @@ app.get("/random_categories[/]?", function(req, res) {
 
 // /suggest_categories/?category=PREFIX
 app.get("/suggest_categories[/]?", function(req, res) {
-    var category = req.query.category;
+    var category = unescape(req.query.category);
     if (!category) {
         res.send("[]");
         return;
@@ -29,7 +29,7 @@ app.get("/suggest_categories[/]?", function(req, res) {
 //
 // /category_abstracts/?category=CATEGORY_NAME
 app.get("/category_abstracts[/]?", function(req, res) {
-    var category = req.query.category;
+    var category = unescape(req.query.category);
     if (!category) {
         res.send("[]");
         return;
@@ -45,7 +45,7 @@ app.get("/category_abstracts[/]?", function(req, res) {
 //
 // /related_categories/?category=CATEGORY_NAME
 app.get("/related_categories[/]?", function(req, res) {
-    var category = req.query.category;
+    var category = unescape(req.query.category);
     if (!category) {
         res.send("[]");
         return;
@@ -55,14 +55,23 @@ app.get("/related_categories[/]?", function(req, res) {
     });
 });
 
-app.get("/", function(req, res) {
-    var index_path = require.resolve("./index.html");
+function serve_static_file(req, res, file_path) {
+    var index_path = require.resolve(file_path);
     var index_fd = fs.openSync(index_path, 'r');
     var index_stream = fs.createReadStream(index_path, {
         fd: index_fd,
         encoding: 'utf8'
     });
     index_stream.pipe(res);
+}
+
+app.get("/", function(req, res) {
+    serve_static_file(req, res, "./index.html");
+});
+
+app.get("/c/:category[/]?", function(req, res) {
+    var category = req.params.category;
+    serve_static_file(req, res, "./index.html");
 });
 
 app.listen(8080);

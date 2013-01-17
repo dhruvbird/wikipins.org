@@ -12,7 +12,26 @@ var parens = {
 var narticles  = 0;
 var nprocessed = 0;
 
-var imageFileRE = /[^\|\[\]=]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/i;
+var imageFileRE = /[^\|\[\]=]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/ig;
+var badImagePrefixRE = /^file:|image:/i;
+
+var MONITOR_TITLE = "Algeria";
+
+function get_image_name(title, text) {
+    var mi = text.match(imageFileRE);
+    var img = '';
+    if (mi) {
+        mi = mi.map(function(iname) {
+            return iname.replace(badImagePrefixRE, '').trim();
+        }).filter(function(iname) {
+            return !!iname;
+        });
+        if (mi.length > 0) {
+            img = mi[0];
+        }
+    }
+    return img;
+}
 
 function remove_paren_text(title, text) {
     var out = [ ];
@@ -41,7 +60,7 @@ function cleanup(title, text)  {
     text = text.replace(/<!--/g, '{').replace(/-->/g, '}');
     text = text.replace(/'{2,10}/g, '');
 
-    if (title == 'Algeria') {
+    if (title == MONITOR_TITLE) {
         // console.log("IS:", text);
     }
 
@@ -54,7 +73,7 @@ function cleanup(title, text)  {
             pstk.push(parens[text[i]]);
             posstk.push(i);
         } else if (pstk.length === 0) {
-            if (title == 'Algeria') {
+            if (title == MONITOR_TITLE) {
                 // console.log(i);
             }
             out.push(text[i]);
@@ -71,7 +90,7 @@ function cleanup(title, text)  {
             posstk.pop();
         }
     }
-    if (title == 'Algeria') {
+    if (title == MONITOR_TITLE) {
         // console.log("LENGTH:", pstk.length);
         // console.log("RETURNING:", out.join(''));
     }
@@ -139,6 +158,10 @@ function main() {
         'redirect': {
             Note: 'The path of the output TSV for article redirects (default: ./redirect.tsv)',
             value: './redirect.tsv'
+        },
+        'image': {
+            Note: 'The path of the output TSV for image file names (default: ./image.tsv)',
+            value: './image.tsv'
         }
     }, 'Process the Wikipedia XML Dump producing the abstract+images, redirect & the category TSV files');
 
@@ -147,16 +170,16 @@ function main() {
     var abstract_out = fs.openSync(opts['abstract'], 'w');
     var category_out = fs.openSync(opts['category'], 'w');
     var redirect_out = fs.openSync(opts['redirect'], 'w');
+    var image_out    = fs.openSync(opts['image'], 'w');
 
     var categoryRE = /\[\[Category:[^\]]+\]\]/g;
     var catNameRE  = /\[\[Category:([^\]]+)\]\]/;
-    var imageRE    = /File:([^\|\]]+)(\||\])|image[^=]*=[\ \t]*([^\n\|]+)|Cover[^=]*=[\ \t]*([^\n\|]+)/i;
     var redirectRE = /#REDIRECT (.+)/;
 
     function on_page(page) {
 	var title = page.getChildText('title').trim();
 	var text  = page.getChild('revision').getChildText('text').trim();
-        var ns    = page.getChildText('ns').trim();
+        var ns    = Number(page.getChildText('ns').trim());
 	var categories = text.match(categoryRE) || [ ];
         narticles += 1;
 
@@ -169,13 +192,21 @@ function main() {
 		return category.match(catNameRE)[1].trim();
 	    }).filter(function(categoryName) {
                 // Filter out category names that are empty or have a
-                // | or a * character.
+                // | or a * character. - why do we do the * thing??
 		return categoryName.length > 0 &&
                     categoryName.search(/[\|\*]/) == -1;
 	    });
 	}
+
+        if (ns == 6) {
+            var img = get_image_name(title, title);
+            if (img) {
+	        fs.writeSync(image_out, img + "\n");
+            }
+        }
+
 	// console.log(title, ns, categories);
-        if (title === 'Algeria' && ns != 0) {
+        if (title === MONITOR_TITLE && ns != 0) {
             console.error("not ns 0:", title, ns);
         }
         if (ns != 0) {
@@ -186,7 +217,6 @@ function main() {
 	    fs.writeSync(category_out, categoryName + "\t" + title + "\n");
 	});
 
-        var mi = text.match(imageRE);
 	var text_cleaned = cleanup(title, text);
         var _abstract = '';
         var img = '';
@@ -195,7 +225,7 @@ function main() {
             return line.length > 0;
         });
 
-        if (title == 'Algeria') {
+        if (title == MONITOR_TITLE) {
             // console.error(lines);
         }
 
@@ -207,7 +237,7 @@ function main() {
             } else {
                 for (var i = 0; i < lines.length; ++i) {
                     var line = trim_to_read(lines[i]);
-                    if (title == 'Algeria' && i == 0) {
+                    if (title == MONITOR_TITLE && i == 0) {
                         // console.error(lines);
                         // console.error("LINE:", line);
                     }
@@ -217,15 +247,10 @@ function main() {
                         break;
 	            }
                 }
-                if (mi) {
-                    img = mi[1] || mi[3];
-                    mi = img.match(imageRE);
-                    if (mi) {
-                        img = mi[1] || mi[3];
-                    }
-                }
+
+                img = get_image_name(title, text);
                 if (_abstract) {
-                    img = remove_paren_text(title, img);
+                    // img = remove_paren_text(title, img);
                     fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
                     nprocessed += 1;
 

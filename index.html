@@ -3,7 +3,7 @@
     <title>Wikipins.org</title>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script type="text/javascript" src="http://www.wookmark.com/js/jquery.wookmark.js"></script>
-    <script type="text/javascript" src="http://pajhome.org.uk/crypt/md5/md5.js"></script>
+    <script type="text/javascript" src="/md5.js"></script>
     <script type="text/javascript">
     // $('img.photo',this).imagesLoaded(myFunction)
     // execute a callback when all images have loaded.
@@ -84,8 +84,10 @@
           -webkit-box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
           background-color: #FFFFFF;
       }
-      div.pin:hover {
-          cursor: pointer;
+      a.pin-click {
+          display: block;
+          text-decoration: none;
+          color: #000000;
       }
       .clear-both {
           clear: both;
@@ -110,6 +112,10 @@
           margin-top: 15px;
           font-family: "Helvetica Neue","Segoe UI","Nimbus Sans L","Liberation Sans","Open Sans",FreeSans,Arial,sans-serif;
       }
+      div.vspacer {
+          position: absolute;
+          height: 120px;
+      }
     </style>
   </head>
 
@@ -126,14 +132,18 @@
     </div>
 
     <div id="pin-template">
-      <div class="category-name"></div>
-      <div class="image"></div>
+      <a class="pin-click">
+        <div class="category-name"></div>
+        <div class="image"></div>
+      </a>
     </div>
 
     <div id="article-pin-template">
-      <div class="title"></div>
-      <div class="image"></div>
-      <div class="abstract"></div>
+      <a class="pin-click">
+        <div class="title"></div>
+        <div class="image"></div>
+        <div class="abstract"></div>
+      </a>
     </div>
 
     <script type="text/javascript">
@@ -141,14 +151,20 @@
           ns = ns || 'commons'
           file_name = file_name.replace(/\ /g, "_");
           var md5sum = hex_md5(file_name);
-          var thumb_name = width + "px-" + file_name;
-          if (file_name.search(/\.svg$/i) != -1) {
-              thumb_name += ".png";
+          var img_url = '';
+          if (width == 0) {
+              img_url = "http://upload.wikimedia.org/wikipedia/" + ns +
+                  "/" + md5sum[0] + "/" + md5sum.substr(0, 2) + "/" + file_name;
+          } else {
+              var thumb_name = width + "px-" + file_name;
+              if (file_name.search(/\.svg$/i) != -1) {
+                  thumb_name += ".png";
+              }
+              img_url = "http://upload.wikimedia.org/wikipedia/" + ns +
+                  "/thumb/" + md5sum[0] + "/" +
+                  md5sum.substr(0, 2) + "/" +
+                  file_name + "/" + thumb_name;
           }
-          var img_url = "http://upload.wikimedia.org/wikipedia/" + ns +
-              "/thumb/" + md5sum[0] + "/" +
-              md5sum.substr(0, 2) + "/" +
-              file_name + "/" + thumb_name;
           return img_url;
       }
 
@@ -160,9 +176,8 @@
           console.log("[1] Error loading:", img.data('img-name'));
           img.off('error')
               .on('error', on_image_error_02);
-          var iwidth = img.data('img-width') == 240 ? 100 : 50;
           img.attr('src', get_image_url(img.data('img-name'),
-                                        iwidth, 'commons'));
+                                        0, 'commons'));
           if (img.data('img-width') == 240) {
               // Set max-height to 240px.
               img.parent().css('max-height', "240px");
@@ -180,7 +195,7 @@
       }
 
       function item_cmp(lhs, rhs) {
-          return rhs.images.length = rhs.images.length;
+          return rhs.images.length - lhs.images.length;
       }
 
       function filter_empty_item(item) {
@@ -192,6 +207,7 @@
               .attr("id", null)
               .addClass("pin")
               .addClass("category-pin");
+          div.find("a.pin-click").attr('href', '/c/' + item.category);
           div.find('.category-name').html(item.category);
           var images = item.images.slice(0,4);
           if (images.length === 2) {
@@ -233,6 +249,7 @@
               .attr("id", null)
               .addClass("pin")
               .addClass("article-pin");
+          div.find('a.pin-click').attr('href', "http://en.wikipedia.org/wiki/" + item.title);
           div.find('.title').html(item.title);
           div.find('.abstract').html(item['abstract']);
 
@@ -258,6 +275,26 @@
           return div;
       }
 
+      function num_cmp(lhs, rhs) {
+          return lhs - rhs;
+      }
+
+      function add_vspacer() {
+          console.log("timedout");
+          var all_bottoms = $("#content .pin").map(function() {
+              var t = $(this);
+              return t.position().top + t.height();
+          }).sort(num_cmp);
+          if (all_bottoms.length == 0) {
+              return;
+          }
+          var max_bottom = all_bottoms[all_bottoms.length - 1];
+          var vspacer = $("<div>&nbsp;</div>").
+              addClass('vspacer').
+              css('top', max_bottom + "px");
+          $("#content").append(vspacer);
+      }
+
       function load_category_pins(category) {
           console.log("load_category_pins(", category, ")");
           $.ajax({
@@ -276,6 +313,7 @@
                           offset: 15,
                           itemWidth: 270
                       });
+                      setTimeout(add_vspacer, 1000);
                   });
               }
           });
@@ -308,23 +346,13 @@
                           offset: 15,
                           itemWidth: 270
                       });
+                      setTimeout(add_vspacer, 1000);
                   });
               }
           });
       }
 
       $().ready(function() {
-          $(".category-pin").live('click', function() {
-              var div = $(this);
-              var category_name = div.find(".category-name").text();
-              window.location = "/c/" + category_name;
-          });
-
-          $(".article-pin").live('click', function() {
-              var div = $(this);
-              var title = div.find(".title").text();
-              window.open("http://en.wikipedia.org/wiki/" + title);
-          });
 
           var m1 = window.location.pathname.match(/^\/c\/([^\/]+)\/?$/);
           if (m1) {

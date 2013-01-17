@@ -71,6 +71,22 @@
           position: absolute;
           height: 120px;
       }
+      .search {
+          width: 300px;
+          margin-left: 25px;
+      }
+      .search-box {
+          margin-right: 0;
+          float: left;
+      }
+      .search-button {
+          margin-left: 0px;
+          width: 25px;
+          float: left;
+      }
+      #htext {
+          margin: auto;
+      }
     </style>
   </head>
 
@@ -79,9 +95,15 @@
       <div id="content"></div>
 
       <div id="header">
-        <center>
+        <div class="search">
+          <input type="text" class="search-box" value="Search" />
+          <input type="button" class="search-button" />
+        </div>
+        <div id="htext">
           <span>Wikipins - A graphical wikipedia navigation experience!</span>
-        </center>
+        </div>
+        <div class="clear-both"></div>
+
       </div>
 
     </div>
@@ -321,6 +343,20 @@
       }
 
       $().ready(function() {
+          var htext_width = $("#htext span").width();
+          console.log("htext_width:", htext_width);
+
+          $("#htext").css('width', (htext_width + 5) + "px");
+
+          $(".search-box").keyup(function(event) {
+              if (event.keyCode == 13) {
+                  alert("Sorry, not implemented");
+              }
+          });
+
+          $(".search-button").click(function(event) {
+              alert("Sorry, not implemented");
+          });
 
           var m1 = window.location.pathname.match(/^\/c\/([^\/]+)\/?$/);
           if (m1) {

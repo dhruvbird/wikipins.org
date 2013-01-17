@@ -190,11 +190,20 @@
       function on_image_error_02() {
           var img = $(this);
           console.log("[2] Error loading:", img.data('img-name'));
-          img.off('error');
+          img.off('error')
+              .on('error', on_image_error_03);
           img.attr('src', get_image_url(img.data('img-name'),
                                         img.data('img-width'),
                                         'en'
                                        ));
+      }
+
+      function on_image_error_03() {
+          var img = $(this);
+          console.log("[3] Error loading:", img.data('img-name'));
+          img.off('error');
+          img.attr('src', get_image_url(img.data('img-name'),
+                                        0, 'en'));
       }
 
       function item_cmp(lhs, rhs) {

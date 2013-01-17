@@ -343,11 +343,6 @@
       }
 
       $().ready(function() {
-          var htext_width = $("#htext span").width();
-          console.log("htext_width:", htext_width);
-
-          $("#htext").css('width', (htext_width + 5) + "px");
-
           $(".search-box").keyup(function(event) {
               if (event.keyCode == 13) {
                   alert("Sorry, not implemented");
@@ -367,6 +362,11 @@
           } else {
               load_category_list("/random_categories/");
           }
+
+          var htext_width = $("#htext span").width();
+          console.log("htext_width:", htext_width);
+
+          $("#htext").css('width', (htext_width + 5) + "px");
       });
     </script>
   </body>

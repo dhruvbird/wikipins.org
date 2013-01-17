@@ -9,17 +9,21 @@
       body {
           background-color: #EEEEEE;
           font-family: sans-serif;
-          margin: 20px 0 20px 0;
-      }
-      h2 {
-          margin-bottom: 15px;
-          font-size: 40px;
+          margin: 5px 0px 0px 0px;
+          position: absolute;
+          top: 80px;
       }
       #header span {
           font-size: 18px;
       }
       #header {
-          margin-bottom: 15px;
+          position: fixed;
+          top: -1px;
+          background-color: #EEE;
+          width: 100%;
+          padding: 10px 0 10px 0;
+          -webkit-box-shadow: inset 0 1px white,0 1px 3px rgba(34, 25, 25, 0.4);
+          box-shadow: inset 0 1px white,0 1px 3px rgba(34, 25, 25, 0.4);
       }
       #pin-template, #article-pin-template {
           display: none;
@@ -72,14 +76,14 @@
 
   <body>
     <div id="content-wrapper">
+      <div id="content"></div>
+
       <div id="header">
         <center>
-          <h2>Wikipins</h2>
-          <span>A graphical wikipedia navigation experience!</span>
+          <span>Wikipins - A graphical wikipedia navigation experience!</span>
         </center>
       </div>
-      <div id="content">
-      </div>
+
     </div>
 
     <div id="pin-template">
@@ -322,8 +326,7 @@
           if (m1) {
               var category = unescape(m1[1]).replace(/_/g, ' ');
               console.log("category:", category);
-              $("#header h2").html(category);
-              $("#header center span").remove();
+              $("#header span").html(category);
               load_category_pins(category);
           } else {
               load_category_list("/random_categories/");

@@ -6,6 +6,8 @@ DROP TABLE IF EXISTS title_categories;
 DROP TABLE IF EXISTS category_list;
 DROP TABLE IF EXISTS redirects;
 
+set session sort_buffer_size = 400 * 1024 * 1024;
+
 
 CREATE TABLE IF NOT EXISTS abstracts(title VARCHAR(200) NOT NULL,
        abstract TEXT NOT NULL,
@@ -26,7 +28,7 @@ ALTER TABLE abstracts ENABLE KEYS;
 
 CREATE TABLE IF NOT EXISTS categories(category VARCHAR(128) NOT NULL,
        title VARCHAR(128) NOT NULL,
-       KEY (category(50))
+       KEY (category(40))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 
@@ -55,7 +57,7 @@ ALTER TABLE categories ENABLE KEYS;
 
 CREATE TABLE IF NOT EXISTS title_categories(category VARCHAR(128) NOT NULL,
        title VARCHAR(128) NOT NULL,
-       KEY (title(50))
+       KEY (title(40))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 
@@ -73,10 +75,8 @@ ALTER TABLE title_categories ENABLE KEYS;
 CREATE TABLE IF NOT EXISTS category_list(category VARCHAR(128) NOT NULL,
      count INT NOT NULL,
      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-     KEY (category(50))
+     KEY (category(40))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
-
-set session sort_buffer_size = 200 * 1024 * 1024;
 
 INSERT INTO category_list(category, count) (SELECT category, COUNT(*) FROM categories GROUP BY category);
 
@@ -85,8 +85,8 @@ INSERT INTO category_list(category, count) (SELECT category, COUNT(*) FROM categ
 
 -- Sort the redirects file on the 'fromtitle' colum before importing.
 
-CREATE TABLE IF NOT EXISTS redirects(fromtitle VARCHAR(200) NOT NULL,
-       totitle VARCHAR(200) NOT NULL,
+CREATE TABLE IF NOT EXISTS redirects(fromtitle VARCHAR(180) NOT NULL,
+       totitle VARCHAR(180) NOT NULL,
        PRIMARY KEY (fromtitle)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
@@ -95,3 +95,14 @@ LOAD DATA LOCAL INFILE 'redirect.fromtitle.sorted.tsv' IGNORE
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
 
+
+-- Load the images table
+
+CREATE TABLE IF NOT EXISTS images(image_name VARCHAR(200),
+       KEY (image_name(40))
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+
+LOAD DATA LOCAL INFILE 'image.tsv' IGNORE
+     INTO TABLE images
+     FIELDS TERMINATED BY '\t'
+     LINES TERMINATED BY '\n';

@@ -76,10 +76,13 @@
       #pin-template, #article-pin-template {
           display: none;
       }
+      div.pin-before-wookmark {
+          float: left;
+          margin: 10px 10px 10px 10px;
+      }
       div.pin {
           width: 240px;
           padding: 15px 15px 15px 15px;
-          margin: 10px 0px 10px 0px;
           box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
           -webkit-box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
           background-color: #FFFFFF;
@@ -205,6 +208,7 @@
       function get_pin_div(item) {
           var div = $("#pin-template").clone()
               .attr("id", null)
+              .addClass('pin-before-wookmark')
               .addClass("pin")
               .addClass("category-pin");
           div.find("a.pin-click").attr('href', '/c/' + item.category);
@@ -247,6 +251,7 @@
       function get_pin_div_for_article(item) {
           var div = $("#article-pin-template").clone()
               .attr("id", null)
+              .addClass('pin-before-wookmark')
               .addClass("pin")
               .addClass("article-pin");
           div.find('a.pin-click').attr('href', "http://en.wikipedia.org/wiki/" + item.title);
@@ -309,6 +314,7 @@
                       $("#content").append(div);
                   });
                   $("#content").imagesLoaded(function() {
+                      $("#content .pin").removeClass('pin-before-wookmark');
                       $("#content .pin").wookmark({
                           offset: 15,
                           itemWidth: 270
@@ -342,6 +348,7 @@
                       $("#content").append(div);
                   });
                   $("#content").imagesLoaded(function() {
+                      $("#content .pin").removeClass('pin-before-wookmark');
                       $("#content .pin").wookmark({
                           offset: 15,
                           itemWidth: 270

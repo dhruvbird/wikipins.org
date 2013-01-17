@@ -65,17 +65,14 @@ function serve_static_file(req, res, file_path) {
     index_stream.pipe(res);
 }
 
-app.get("/", function(req, res) {
-    serve_static_file(req, res, "./index.html");
-});
+app.use('/static/', express.static(__dirname + "/static/"));
 
-app.get("/md5.js", function(req, res) {
-    serve_static_file(req, res, "./md5.js");
+app.get("/", function(req, res) {
+    serve_static_file(req, res, "./static/index.html");
 });
 
 app.get("/c/[^/]+[/]?", function(req, res) {
-    var category = req.params.category;
-    serve_static_file(req, res, "./index.html");
+    serve_static_file(req, res, "./static/index.html");
 });
 
 app.listen(8080);

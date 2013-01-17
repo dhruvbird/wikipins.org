@@ -73,7 +73,7 @@ app.get("/md5.js", function(req, res) {
     serve_static_file(req, res, "./md5.js");
 });
 
-app.get("/c/:category[/]?", function(req, res) {
+app.get("/c/[^/]+[/]?", function(req, res) {
     var category = req.params.category;
     serve_static_file(req, res, "./index.html");
 });

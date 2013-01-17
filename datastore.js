@@ -57,7 +57,7 @@ var get_random_category_images = (function(n, delay) {
                 return;
             }
             var row_count = rows[0].count;
-            var rids = [ ];
+            var rids = [ /*283*/ ]; // FIXME
             var i;
             for (i = 0; i < n; ++i) {
                 rids.push(Math.floor(Math.random() * row_count));
@@ -93,7 +93,7 @@ function get_category_images_and_count(category, conn, cb) {
      * A.title = C.title AND
      * C.category = ? AND
      * LENGTH(A.image) > 4
-     * LIMIT 4
+     * LIMIT 10
      */
     connection = conn || get_conn();
     connection.query("SELECT A.image AS image, CL.count AS count FROM categories C, abstracts A, category_list CL " +
@@ -118,7 +118,7 @@ function get_category_images_and_count(category, conn, cb) {
     }
 }
 
-// Returns a set of up to 8 images for the list of categories passed
+// Returns a set of up to 10 images for the list of categories passed
 // in.
 function get_multi_category_images_and_count(categories, cb) {
     var ctr = -1;

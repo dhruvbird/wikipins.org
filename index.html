@@ -220,7 +220,7 @@
               .addClass('pin-before-wookmark')
               .addClass("pin")
               .addClass("category-pin");
-          div.find("a.pin-click").attr('href', '/c/' + item.category);
+          div.find("a.pin-click").attr('href', '/c/' + escape(item.category.replace(/\ /g, '_')));
           div.find('.category-name').html(item.category);
           var images = item.images.slice(0,4);
           if (images.length === 2) {
@@ -263,7 +263,7 @@
               .addClass('pin-before-wookmark')
               .addClass("pin")
               .addClass("article-pin");
-          div.find('a.pin-click').attr('href', "http://en.wikipedia.org/wiki/" + item.title);
+          div.find('a.pin-click').attr('href', "http://en.wikipedia.org/wiki/" + item.title.replace(/\ /, '_'));
           div.find('.title').html(item.title);
           div.find('.abstract').html(item['abstract']);
 
@@ -372,7 +372,8 @@
 
           var m1 = window.location.pathname.match(/^\/c\/([^\/]+)\/?$/);
           if (m1) {
-              var category = unescape(m1[1]);
+              var category = unescape(m1[1]).replace(/_/g, ' ');
+              console.log("category:", category);
               $("#header h2").html(category);
               $("#header center span").remove();
               load_category_pins(category);

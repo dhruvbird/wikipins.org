@@ -29,23 +29,14 @@ ALTER TABLE abstracts ENABLE KEYS;
 
 CREATE TABLE IF NOT EXISTS categories(category VARCHAR(128) NOT NULL,
        title VARCHAR(128) NOT NULL,
-       KEY (category(40))
+       KEY (category(40)),
+       KEY (title(40))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 
--- Sort the categories.tsv file before importing.
---
--- TAB=`printf "\t"`
--- sort -f -k 1 -t "$TAB" -S 300M category.tsv > category.category.sorted.tsv
--- sort -f -k 2 -t "$TAB" -S 300M category.tsv > category.title.sorted.tsv
---
--- Make sure that category.tsv is sorted on the 'category' column, or
--- the insert will take too long. Adding the index post import is also
--- very slow with MyISAM. Hence, we just use 2 tables to be done with
--- things quickly.
 ALTER TABLE categories DISABLE KEYS;
 
-LOAD DATA LOCAL INFILE 'category.category.sorted.tsv'
+LOAD DATA LOCAL INFILE 'category.tsv'
      INTO TABLE categories
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
@@ -53,23 +44,6 @@ LOAD DATA LOCAL INFILE 'category.category.sorted.tsv'
 ALTER TABLE categories ENABLE KEYS;
 
 
-
-
-
-CREATE TABLE IF NOT EXISTS title_categories(category VARCHAR(128) NOT NULL,
-       title VARCHAR(128) NOT NULL,
-       KEY (title(40))
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
-
-
-ALTER TABLE title_categories DISABLE KEYS;
-
-LOAD DATA LOCAL INFILE 'category.title.sorted.tsv'
-     INTO TABLE title_categories
-     FIELDS TERMINATED BY '\t'
-     LINES TERMINATED BY '\n';
-
-ALTER TABLE title_categories ENABLE KEYS;
 
 
 
@@ -91,7 +65,7 @@ CREATE TABLE IF NOT EXISTS redirects(fromtitle VARCHAR(180) NOT NULL,
        PRIMARY KEY (fromtitle)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
-LOAD DATA LOCAL INFILE 'redirect.fromtitle.sorted.tsv' IGNORE
+LOAD DATA LOCAL INFILE 'redirect.tsv' IGNORE
      INTO TABLE redirects
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';

@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS categories(category VARCHAR(128) NOT NULL,
 
 ALTER TABLE categories DISABLE KEYS;
 
-LOAD DATA LOCAL INFILE 'category.tsv'
+LOAD DATA LOCAL INFILE 'category.category.sorted.tsv'
      INTO TABLE categories
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';

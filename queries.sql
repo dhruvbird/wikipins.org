@@ -1,10 +1,11 @@
-use wikipins;
+-- use wikipins;
 
 DROP TABLE IF EXISTS abstracts;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS title_categories;
 DROP TABLE IF EXISTS category_list;
 DROP TABLE IF EXISTS redirects;
+DROP TABLE IF EXISTS images;
 
 set session sort_buffer_size = 400 * 1024 * 1024;
 
@@ -96,10 +97,12 @@ LOAD DATA LOCAL INFILE 'redirect.fromtitle.sorted.tsv' IGNORE
      LINES TERMINATED BY '\n';
 
 
--- Load the images table
+-- Load the images table. The PK here doesn't cause a problem since
+-- there are just ~90k articles with images in the whole of english
+-- wikipedia, and we just pick up the 1st image in every article.
 
 CREATE TABLE IF NOT EXISTS images(image_name VARCHAR(200),
-       KEY (image_name(40))
+       PRIMARY KEY (image_name(40))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 LOAD DATA LOCAL INFILE 'image.tsv' IGNORE

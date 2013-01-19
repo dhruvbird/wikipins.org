@@ -9,4 +9,4 @@ sort -f -k 1 -t "$TAB" -S 400M category.tsv > category.category.sorted.tsv
 
 # sort -f -k 1 -t "$TAB" -S 400M redirect.tsv > redirect.fromtitle.sorted.tsv
 
-cat category.category.sorted.tsv | cut -d "$TAB" -f 1 category.tsv | uniq > category_list.tsv
+cat category.category.sorted.tsv | cut -d "$TAB" -f 1 category.tsv | uniq -c | sed 's/\ *\([0-9]\+\)\ /\1\t/' > category_list.tsv

@@ -53,12 +53,18 @@ CREATE TABLE IF NOT EXISTS category_list(category VARCHAR(128) NOT NULL,
      KEY (category(40))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
-INSERT INTO category_list(category, count) (SELECT category, COUNT(*) FROM categories GROUP BY category);
+ALTER TABLE category_list DISABLE KEYS;
+
+LOAD DATA LOCAL INFILE 'category_list.tsv'
+     INTO TABLE categories
+     FIELDS TERMINATED BY '\t'
+     LINES TERMINATED BY '\n'
+     (@ccount, @cname)
+     SET category = @cname, count = @ccount;
+
+ALTER TABLE category_list ENABLE KEYS;
 
 
-
-
--- Sort the redirects file on the 'fromtitle' colum before importing.
 
 CREATE TABLE IF NOT EXISTS redirects(fromtitle VARCHAR(180) NOT NULL,
        totitle VARCHAR(180) NOT NULL,

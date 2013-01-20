@@ -75,4 +75,15 @@ app.get("/c/[^/]+[/]?", function(req, res) {
     serve_static_file(req, res, "./static/index.html");
 });
 
+app.get("/c/suggest[/]?", function(req, res) {
+    var category = unescape(req.query.category);
+    if (!category) {
+        res.send("[]");
+        return;
+    }
+    ds.get_related_categories(category, function(related_categories) {
+        res.jsonp(abstracts);
+    });
+});
+
 app.listen(8080);

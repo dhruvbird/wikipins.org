@@ -3,6 +3,7 @@
 DROP TABLE IF EXISTS abstracts;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS title_categories;
+DROP TABLE IF EXISTS category_images;
 DROP TABLE IF EXISTS category_list;
 DROP TABLE IF EXISTS redirects;
 DROP TABLE IF EXISTS images;
@@ -13,7 +14,7 @@ set session sort_buffer_size = 400 * 1024 * 1024;
 CREATE TABLE IF NOT EXISTS abstracts(title VARCHAR(200) NOT NULL,
        abstract TEXT NOT NULL,
        image VARCHAR(300) NOT NULL,
-       KEY (title)
+       KEY (title(50))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 ALTER TABLE abstracts DISABLE KEYS;
@@ -56,13 +57,30 @@ CREATE TABLE IF NOT EXISTS category_list(category VARCHAR(128) NOT NULL,
 ALTER TABLE category_list DISABLE KEYS;
 
 LOAD DATA LOCAL INFILE 'category_list.tsv'
-     INTO TABLE categories
+     INTO TABLE category_list
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n'
      (@ccount, @cname)
      SET category = @cname, count = @ccount;
 
 ALTER TABLE category_list ENABLE KEYS;
+
+
+
+CREATE TABLE IF NOT EXISTS category_images(category VARCHAR(128) NOT NULL,
+     title VARCHAR(200) NOT NULL,
+     image VARCHAR(300) NOT NULL,
+     KEY (category(40))
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+
+ALTER TABLE category_images DISABLE KEYS;
+
+LOAD DATA LOCAL INFILE 'cimage.reduced.tsv' IGNORE
+     INTO TABLE category_images
+     FIELDS TERMINATED BY '\t'
+     LINES TERMINATED BY '\n';
+
+ALTER TABLE category_images ENABLE KEYS;
 
 
 

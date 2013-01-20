@@ -27,7 +27,7 @@ var get_random_category_images = (function(n, delay) {
     var cached = { };
     var prev_ts = new Date() - delay - 1000;
     return function(cb) {
-        var invoked_cb = false;
+        cb = _.once(cb);
         if (new Date() - prev_ts < delay) {
             cb(cached);
             return;
@@ -35,7 +35,6 @@ var get_random_category_images = (function(n, delay) {
 
         if (Object.keys(cached).length > 0) {
             // Return cached data, but perform computation.
-            invoked_cb = true;
             cb(cached);
         }
         /* Get # of elements in the category_list table.
@@ -51,9 +50,7 @@ var get_random_category_images = (function(n, delay) {
         connection.query('SELECT COUNT(*) AS count FROM category_list', function(err, rows, fields) {
             if (err) {
                 console.error(err.stack);
-                if (!invoked_cb) {
-                    cb(err);
-                }
+                cb([ ]);
                 return;
             }
             var row_count = rows[0].count;
@@ -63,81 +60,54 @@ var get_random_category_images = (function(n, delay) {
                 rids.push(Math.floor(Math.random() * row_count));
             }
 
-            connection.query('SELECT CL.category AS category FROM category_list CL WHERE CL.id IN (?)', [ rids ], function(err, rows, fields) {
-                if (err) {
-                    console.error(err.stack);
-                    if (!invoked_cb) {
-                        cb(err);
-                    }
-                    return;
-                }
-                connection.end();
-                var categories = _.pluck(rows, 'category');
-                /* Get images for these categories */
-                get_multi_category_images_and_count(categories, function(res) {
-                    cached = res;
-                    prev_ts = new Date();
-                    if (!invoked_cb) {
-                        cb(cached);
-                    }
-                });
-            });
+            get_multi_category_id_images_and_count(rids, cb);
+
         });
     };
 })(128, 30 * 60 * 1000);
 
-// Returns a set of up to 10 images for a given category.
-function get_category_images_and_count(category, conn, cb) {
-    /* SELECT image FROM categories C, abstracts A
-     * WHERE
-     * A.title = C.title AND
-     * C.category = ? AND
-     * LENGTH(A.image) > 4
-     * LIMIT 10
-     */
-    connection = conn || get_conn();
-    connection.query("SELECT A.image AS image, CL.count AS count FROM categories C, abstracts A, category_list CL " +
-                     "WHERE A.title = C.title AND CL.category = C.category AND " +
-                     "C.category = ? AND LENGTH(A.image) > 4 LIMIT 10",
+// Returns a set of up to 8 images for the list of category IDs passed
+// in.
+function get_multi_category_id_images_and_count(category_ids, cb) {
+    var connection = get_conn();
+
+    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count " +
+                     "FROM category_list CL, category_images CI " +
+                     "WHERE CL.category = CI.category AND " +
+                     "CL.id IN (?) ",
+                     [ category_ids ], function(err, rows, fields) {
+                         if (err) {
+                             console.error(err);
+                             cb(category, [ ]);
+                             return;
+                         }
+                         var res = _.groupBy(rows, 'category');
+                         cb(res);
+                     });
+    connection.end();
+}
+
+//
+// Returns a set of up to 8 images for the list of categories passed
+// in. The '8' is hard-coded in the data (database) itself.
+//
+function get_multi_category_images_and_count(categories, cb) {
+    var connection = get_conn();
+
+    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count " +
+                     "FROM category_list CL, category_images CI " +
+                     "WHERE CL.category = CI.category AND " +
+                     "CI.category IN (?) ",
                      [ category ], function(err, rows, fields) {
                          if (err) {
                              console.error(err);
                              cb(category, [ ]);
                              return;
                          }
-                         var images = _.pluck(rows, 'image').map(clean_image_name)
-                             .filter(function(img) { return !!img; });
-                         var count = rows.length > 0 ? rows[0].count : 0;
-                         cb(category, {
-                             images: images,
-                             count: count
-                         });
+                         var res = _.groupBy(rows, 'category');
+                         cb(res);
                      });
-    if (!conn) {
-        connection.end();
-    }
-}
-
-// Returns a set of up to 10 images for the list of categories passed
-// in.
-function get_multi_category_images_and_count(categories, cb) {
-    var ctr = -1;
-    var res = { };
-    var connection = get_conn();
-
-    function next(category, images_count) {
-        if (ctr > -1) {
-            res[category] = images_count;
-        }
-        ctr += 1;
-        if (ctr === categories.length) {
-            connection.end();
-            cb(res);
-        } else {
-            get_category_images_and_count(categories[ctr], connection, next);
-        }
-    }
-    next('', []);
+    connection.end();
 }
 
 function suggest_categories(category_prefix, n, cb) {
@@ -157,10 +127,14 @@ function suggest_categories(category_prefix, n, cb) {
     connection.end();
 }
 
+// Given a list of titles, return a list of related categories along
+// with their relative weights w.r.t. the titles passed in.
+//
 // Returns an array with each element being a hash of the following form:
 // { category: CATEGORY_NAME, count: NUMBER_OF_TIME_THIS_CATEGORY_OCCURS }
+//
 function get_multi_categories_by_titles(titles, cb) {
-    /* SELECT category, COUNT(*) as count FROM title_categories
+    /* SELECT category, COUNT(*) as count FROM categories
        WHERE title IN ? GROUP BY category
     */
     if (titles.length === 0) {
@@ -168,17 +142,18 @@ function get_multi_categories_by_titles(titles, cb) {
         return;
     }
     var connection = get_conn();
-    connection.query("SELECT category, COUNT(*) as count FROM title_categories " +
+    connection.query("SELECT category, COUNT(*) as count FROM categories " +
                      "WHERE title IN (?) GROUP BY category",
                      [ titles ], function(err, rows, fields) {
                          cb(rows);
                      });
 }
 
+/* Given a category name, return a list of related category names */
 function get_related_categories(category, cb) {
     var connection = get_conn();
     connection.query("SELECT TC.category AS category, COUNT(*) as count " +
-                     "FROM title_categories TC JOIN categories C " +
+                     "FROM categories TC JOIN categories C " +
                      "ON C.title=TC.title " +
                      "WHERE C.category = ? " +
                      "GROUP BY category ORDER BY count DESC", [ category ], function(err, rows, fields) {
@@ -187,6 +162,7 @@ function get_related_categories(category, cb) {
     connection.end();
 }
 
+/* Get the list of titles for a given category name */
 function get_category_titles(category, cb) {
     /* SELECT title FROM categories WHERE category = ? */
     var connection = get_conn();
@@ -277,6 +253,21 @@ function get_multi_abstracts_by_title(titles, cb) {
     });
 }
 
+function suggest(prefix, cb) {
+    var connection = get_conn();
+    connection.query("(SELECT category AS completion, 'C' AS type FROM categories WHERE category like '?%' LIMIT 10) " +
+                     "UNION (SELECT title AS completion, 'A' AS type  FROM abstracts WHERE title like '?%' LIMIT 10)",
+                     [ prefix ], function(err, rows, fields) {
+                         if (err) {
+                             console.error(err);
+                             return;
+                         }
+                         var matches = rows;
+                         cb(matches);
+                     });
+    connection.end();
+}
+
 
 function test(which) {
     if (which.suggest_categories) {
@@ -344,3 +335,4 @@ exports.get_category_titles                 = get_category_titles;
 exports.get_multi_category_images_and_count = get_multi_category_images_and_count;
 exports.get_multi_categories_by_titles      = get_multi_categories_by_titles;
 exports.get_random_category_images          = get_random_category_images;
+exports.suggest                             = suggest

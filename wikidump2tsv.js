@@ -12,8 +12,10 @@ var parens = {
 var narticles  = 0;
 var nprocessed = 0;
 
-var imageFileRE = /[^\|\[\]=]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/ig;
-var badImagePrefixRE = /^file:|image:/i;
+var imageFileRE      = /[^\|\[\]\n=]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/ig;
+var badImagePrefixRE = /^(file:|image:)/i;
+var maybeUrlRE       = /http:\/\//;
+var wsRE             = /\s+/g;
 
 var MONITOR_TITLE = "Algeria";
 
@@ -22,6 +24,9 @@ function get_image_name(title, text) {
     var img = '';
     if (mi) {
         mi = mi.map(function(iname) {
+            if (iname.search(maybeUrlRE) != -1) {
+                return '';
+            }
             return iname.replace(badImagePrefixRE, '').trim();
         }).filter(function(iname) {
             return !!iname;
@@ -94,7 +99,8 @@ function cleanup(title, text)  {
         // console.log("LENGTH:", pstk.length);
         // console.log("RETURNING:", out.join(''));
     }
-    return out.join('').replace(/\ ,/g, ',').trim();
+    var s = out.join('').replace(/\s+,/g, ',');
+    return s.trim();
 }
 
 function is_readable(text) {
@@ -115,8 +121,12 @@ function is_readable(text) {
     return !(text[0] === '<' || text[0] === '#' || text.substr(0, 2) === '{{');
 }
 
+function cleanup_ws(text) {
+    return text.replace(wsRE, ' ');
+}
+
 function trim_to_read(text) {
-    return text.replace(/^[^"'0-9a-zA-Z]+/, '').replace(/[^"'0-9a-zA-Z]+$/, '');
+    return cleanup_ws(text.replace(/^[^"'0-9a-zA-Z]+/, '').replace(/[^"'0-9a-zA-Z]+$/, ''));
 }
 
 function getText(element, trim) {
@@ -152,7 +162,7 @@ function main() {
             value: './abstract.tsv'
         },
         'category': {
-            Note: 'The path of the output TSV for article abstracts and images (default: ./abstract.tsv)',
+            Note: 'The path of the output TSV for article abstracts and images (default: ./category.tsv)',
             value: './category.tsv'
         },
         'redirect': {
@@ -162,6 +172,10 @@ function main() {
         'image': {
             Note: 'The path of the output TSV for image file names (default: ./image.tsv)',
             value: './image.tsv'
+        },
+        'cimage': {
+            Note: 'The path of the output TSV for category image list file (default: ./cimage.tsv)',
+            value: './cimage.tsv'
         }
     }, 'Process the Wikipedia XML Dump producing the abstract+images, redirect & the category TSV files');
 
@@ -171,9 +185,10 @@ function main() {
     var category_out = fs.openSync(opts['category'], 'w');
     var redirect_out = fs.openSync(opts['redirect'], 'w');
     var image_out    = fs.openSync(opts['image'], 'w');
+    var cimage_out   = fs.openSync(opts['cimage'], 'w');
 
-    var categoryRE = /\[\[Category:[^\]]+\]\]/g;
-    var catNameRE  = /\[\[Category:([^\]]+)\]\]/;
+    var categoryRE = /\[\[Category:[^\]\n]+\]\]/g;
+    var catNameRE  = /\[\[Category:([^\]\n]+)\]\]/;
     var redirectRE = /#REDIRECT (.+)/;
 
     function on_page(page) {
@@ -189,12 +204,11 @@ function main() {
 
 	if (categories) {
 	    categories = categories.map(function(category) {
-		return category.match(catNameRE)[1].trim();
+		return cleanup_ws(category.match(catNameRE)[1]).trim();
 	    }).filter(function(categoryName) {
                 // Filter out category names that are empty or have a
                 // | or a * character. - why do we do the * thing??
-		return categoryName.length > 0 &&
-                    categoryName.search(/[\|\*]/) == -1;
+		return categoryName.length > 0 && categoryName.search(/[\|\*]/) === -1;
 	    });
 	}
 
@@ -213,13 +227,15 @@ function main() {
             // Special page. Ignore me.
             return;
         }
+
+        // Write out the categories
 	categories.forEach(function(categoryName) {
 	    fs.writeSync(category_out, categoryName + "\t" + title + "\n");
 	});
 
 	var text_cleaned = cleanup(title, text);
         var _abstract = '';
-        var img = '';
+        var img = get_image_name(title, text);
 
         var lines = text_cleaned.split('\n').filter(function(line) {
             return line.length > 0;
@@ -237,7 +253,7 @@ function main() {
             } else {
                 for (var i = 0; i < lines.length; ++i) {
                     var line = trim_to_read(lines[i]);
-                    if (title == MONITOR_TITLE && i == 0) {
+                    if (i == 0 && title == MONITOR_TITLE) {
                         // console.error(lines);
                         // console.error("LINE:", line);
                     }
@@ -248,9 +264,7 @@ function main() {
 	            }
                 }
 
-                img = get_image_name(title, text);
                 if (_abstract) {
-                    // img = remove_paren_text(title, img);
                     fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
                     nprocessed += 1;
 
@@ -259,6 +273,14 @@ function main() {
             } // else
 
         } // if (lines.length > 0)
+
+        // Only write out image names that are > 4 characters in length
+        if (img.length > 4) {
+            // Write out the category-images
+	    categories.forEach(function(categoryName) {
+	        fs.writeSync(cimage_out, categoryName + "\t" + title + "\t" + img + "\n");
+	    });
+        }
 
     } // on_page()
 

@@ -86,7 +86,7 @@ ALTER TABLE category_images ENABLE KEYS;
 
 CREATE TABLE IF NOT EXISTS redirects(fromtitle VARCHAR(180) NOT NULL,
        totitle VARCHAR(180) NOT NULL,
-       PRIMARY KEY (fromtitle)
+       PRIMARY KEY (fromtitle(180))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 LOAD DATA LOCAL INFILE 'redirect.tsv' IGNORE

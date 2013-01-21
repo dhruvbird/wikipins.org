@@ -76,11 +76,12 @@ app.get("/c/[^/]+[/]?", function(req, res) {
 });
 
 app.get("/c/suggest[/]?", function(req, res) {
-    var category = unescape(req.query.category);
-    if (!category) {
+    var q = unescape(req.query.q);
+    if (!q) {
         res.send("[]");
         return;
     }
+    // ds.suggest(
     ds.get_related_categories(category, function(related_categories) {
         res.jsonp(abstracts);
     });

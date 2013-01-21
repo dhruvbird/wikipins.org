@@ -8,7 +8,7 @@ BEGIN { FS="\t"; T=""; C=0; } {
     C=C+$2
   } else {
     if (T!="") {
-      print T"\t"C" 0";
+      print T"\t"C;
     }
     T=tolower($1); C=$2;
   }

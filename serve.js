@@ -13,18 +13,6 @@ app.get("/random_categories[/]?", function(req, res) {
     });
 });
 
-// /suggest_categories/?category=PREFIX
-app.get("/suggest_categories[/]?", function(req, res) {
-    var category = unescape(req.query.category);
-    if (!category) {
-        res.send("[]");
-        return;
-    }
-    ds.suggest_categories(category, 10, function(suggested_categories) {
-        res.jsonp(suggested_categories);
-    });
-});
-
 // Fetch the list of titles & abstracts for a given category name.
 //
 // /category_abstracts/?category=CATEGORY_NAME
@@ -73,18 +61,6 @@ app.get("/", function(req, res) {
 
 app.get("/c/[^/]+[/]?", function(req, res) {
     serve_static_file(req, res, "./static/index.html");
-});
-
-app.get("/c/suggest[/]?", function(req, res) {
-    var q = unescape(req.query.q);
-    if (!q) {
-        res.send("[]");
-        return;
-    }
-    // ds.suggest(
-    ds.get_related_categories(category, function(related_categories) {
-        res.jsonp(abstracts);
-    });
 });
 
 app.listen(8080);

@@ -110,23 +110,6 @@ function get_multi_category_images_and_count(categories, cb) {
     connection.end();
 }
 
-function suggest_categories(category_prefix, n, cb) {
-    /* SELECT category FROM category_list WHERE category LIKE ? LIMIT ? */
-    var connection = get_conn();
-    connection.query("SELECT category FROM category_list WHERE category LIKE ? LIMIT ?",
-                     [category_prefix + "%", n], function(err, rows, fields) {
-                         if (err) {
-                             console.error(err);
-                             cb([]);
-                             return;
-                         }
-                         console.log(rows);
-                         var categories = _.pluck(rows, 'category');
-                         cb(categories);
-                     });
-    connection.end();
-}
-
 // Given a list of titles, return a list of related categories along
 // with their relative weights w.r.t. the titles passed in.
 //
@@ -253,29 +236,7 @@ function get_multi_abstracts_by_title(titles, cb) {
     });
 }
 
-function suggest(prefix, cb) {
-    var connection = get_conn();
-    connection.query("(SELECT category AS completion, 'C' AS type FROM categories WHERE category like '?%' LIMIT 10) " +
-                     "UNION (SELECT title AS completion, 'A' AS type  FROM abstracts WHERE title like '?%' LIMIT 10)",
-                     [ prefix ], function(err, rows, fields) {
-                         if (err) {
-                             console.error(err);
-                             return;
-                         }
-                         var matches = rows;
-                         cb(matches);
-                     });
-    connection.end();
-}
-
-
 function test(which) {
-    if (which.suggest_categories) {
-        suggest_categories(which.suggest_categories, 10, function(suggested_categories) {
-            console.log("suggested_categories(", which.suggest_categories, ") = ", suggested_categories);
-        });
-    }
-
     if (which.get_multi_abstracts_by_title) {
         get_multi_abstracts_by_title(which.get_multi_abstracts_by_title, function(abstracts) {
             console.log("get_multi_abstracts_by_title(", which.get_multi_abstracts_by_title, ") = ", abstracts);
@@ -318,7 +279,6 @@ function test(which) {
 
 if (require.main === module) {
     test({
-        // suggest_categories:                  "Pers",
         // get_multi_abstracts_by_title:        [ "Barack Obama", "Adolf Hitler", "Water" ],
         // get_category_titles:                 '13th-century deaths',
         // get_multi_category_images_and_count: ['13th-century deaths', '12th-century deaths'],
@@ -329,10 +289,9 @@ if (require.main === module) {
 }
 
 exports.get_related_categories              = get_related_categories;
-exports.suggest_categories                  = suggest_categories;
 exports.get_multi_abstracts_by_title        = get_multi_abstracts_by_title;
 exports.get_category_titles                 = get_category_titles;
 exports.get_multi_category_images_and_count = get_multi_category_images_and_count;
 exports.get_multi_categories_by_titles      = get_multi_categories_by_titles;
 exports.get_random_category_images          = get_random_category_images;
-exports.suggest                             = suggest
+

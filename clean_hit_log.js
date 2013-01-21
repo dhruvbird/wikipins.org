@@ -27,9 +27,11 @@ function main() {
         var hits  = parts[2]
         var b = new Buffer(unescape(title), 'binary');
         title = b.toString('utf8');
-        title = title.replace(cprefixRE, '').trim();
-        title = title.replace(/_/g, ' ');
-        process.stdout.write(title + "\t" + hits + "\n");
+        title = title.replace(cprefixRE, '');
+        title = title.replace(/_/g, ' ').trim();
+        if (title.length > 0) {
+            process.stdout.write(title + "\t" + hits + "\n");
+        }
     }
 
 }

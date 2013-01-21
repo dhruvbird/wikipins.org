@@ -5,6 +5,7 @@
     <script type="text/javascript" src="/static/jquery.wookmark.js"></script>
     <script type="text/javascript" src="/static/md5.js"></script>
     <script type="text/javascript" src="/static/imagesLoaded.js"></script>
+    <script type="text/javascript" src="/static/underscore-min.js"></script>
     <style type="text/css">
       body {
           background-color: #EEEEEE;
@@ -318,11 +319,13 @@
                   var key;
                   for (key in data) {
                       var item = data[key];
-                      a.push({
-                          category: key,
-                          count: item.count,
-                          images: item.images
-                      });
+                      if (item.length > 0) {
+                          a.push({
+                              category: key,
+                              count: item[0].count,
+                              images: _.pluck(item, 'images');
+                          });
+                      }
                   }
                   a = a.filter(filter_empty_item);
                   a.sort(item_cmp);

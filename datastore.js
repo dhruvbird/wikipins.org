@@ -17,7 +17,7 @@ function get_conn() {
         // host: 'localhost',
         host: 'ec2-50-16-38-126.compute-1.amazonaws.com',
         user: 'root',
-        database: 'wikipins',
+        database: 'wikipins2',
         charset: 'utf8_unicode_ci'
     });
     return connection;

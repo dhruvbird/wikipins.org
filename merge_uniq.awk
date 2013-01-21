@@ -3,7 +3,7 @@
 # Merge adgacent entries and add up their counts. Input lines are TAB
 # separated and terminated by a newline.
 
-BEGIN { FS="\t"; T=""; C=0; } {
+BEGIN { IGNORECASE=1; FS="\t"; T=""; C=0; } {
   if (T==$1) {
     C=C+$2
   } else {

@@ -55,7 +55,7 @@ LOAD DATA LOCAL INFILE 'enCategoryHits.tsv'
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n'
      (@cname, @hits)
-     SET type='C', category = @cname, hits = @hits;
+     SET type='C', title = @cname, hits = @hits;
 
 LOAD DATA LOCAL INFILE 'enwikiHitsAll.tsv'
      INTO TABLE enhits
@@ -73,16 +73,16 @@ CREATE TABLE enallhits(title VARCHAR(200) NOT NULL,
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 INSERT INTO enallhits(title, hits) 
- SELECT CONCAT('C:', C.category) AS title, COALESE(EH.hits, 0) AS hits 
- FROM categories C LEFT OUTER JOIN enhits EH 
- ON C.category = EH.title 
- WHERE EH.type = 'C' LIMIT 10;
-
-INSERT INTO enallhits(title, hits) 
- SELECT CONCAT('A:', T.title) AS title, COALESE(EH.hits, 0) AS hits 
+ SELECT CONCAT('A:', T.title) AS title, COALESCE(EH.hits, 0) AS hits 
  FROM titles T LEFT OUTER JOIN enhits EH 
  ON T.title = EH.title 
- WHERE EH.type = 'A' LIMIT 10;
+ WHERE EH.type = 'A';
+
+INSERT INTO enallhits(title, hits) 
+ SELECT CONCAT('C:', C.category) AS title, COALESCE(EH.hits, 0) AS hits 
+ FROM categories C LEFT OUTER JOIN enhits EH 
+ ON C.category = EH.title 
+ WHERE EH.type = 'C';
 
 SELECT title, hits INTO OUTFILE '/tmp/enallhits.tsv' 
 FROM enallhits;

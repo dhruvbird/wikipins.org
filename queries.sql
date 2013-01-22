@@ -32,8 +32,7 @@ CREATE TABLE IF NOT EXISTS categories(category VARCHAR(128) NOT NULL,
        title VARCHAR(128) NOT NULL,
        KEY (category(40)),
        KEY (title(40))
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
-
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_general_ci;
 
 ALTER TABLE categories DISABLE KEYS;
 
@@ -86,13 +85,17 @@ ALTER TABLE category_images ENABLE KEYS;
 
 CREATE TABLE IF NOT EXISTS redirects(fromtitle VARCHAR(180) NOT NULL,
        totitle VARCHAR(180) NOT NULL,
-       PRIMARY KEY (fromtitle(180))
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
+       KEY (fromtitle(180))
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_general_ci;
+
+ALTER TABLE redirects DISABLE KEYS;
 
 LOAD DATA LOCAL INFILE 'redirect.tsv' IGNORE
      INTO TABLE redirects
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
+
+ALTER TABLE redirects ENABLE KEYS;
 
 
 -- Load the images table. The PK here doesn't cause a problem since

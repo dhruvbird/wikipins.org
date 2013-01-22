@@ -52,7 +52,7 @@ var get_random_category_images = (function(n, delay) {
                 return;
             }
             var row_count = rows[0].count;
-            var rids = [ /*283*/ ]; // FIXME
+            var rids = [ /*140*/ ]; // FIXME
             var i;
             for (i = 0; i < n; ++i) {
                 rids.push(Math.floor(Math.random() * row_count));

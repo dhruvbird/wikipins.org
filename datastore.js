@@ -26,6 +26,7 @@ var get_random_category_images = (function(n, delay) {
     var prev_ts = new Date() - delay - 1000;
     return function(cb) {
         cb = _.once(cb);
+        console.log(new Date() - prev_ts, delay);
         if (new Date() - prev_ts < delay) {
             cb(cached);
             return;
@@ -58,11 +59,15 @@ var get_random_category_images = (function(n, delay) {
                 rids.push(Math.floor(Math.random() * row_count));
             }
 
-            get_multi_category_id_images_and_count(rids, cb);
+            get_multi_category_id_images_and_count(rids, function(data) {
+                prev_ts = new Date();
+                cached = data;
+                cb(data);
+            });
 
         });
     };
-})(128, 30 * 60 * 1000);
+})(128, 5 * 60 * 1000); // Cache for 5 minutes.
 
 // Returns a set of up to 8 images for the list of category IDs passed
 // in.

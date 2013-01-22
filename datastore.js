@@ -87,7 +87,9 @@ function get_multi_category_id_images_and_count(category_ids, cb) {
 
 //
 // Returns a set of up to 8 images for the list of categories passed
-// in. The '8' is hard-coded in the data (database) itself.
+// in. The '8' is hard-coded in the data (database) itself (i.e. There
+// are only up to 8 rows for a given category name in the table
+// category_images).
 //
 function get_multi_category_images_and_count(categories, cb) {
     var connection = get_conn();

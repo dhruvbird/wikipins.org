@@ -446,9 +446,9 @@
               select: function(event, ui) {
                   var item = ui.item;
                   if (item.value.search(/^Category:/) == 0) {
-                      window.location = "/c/" + escape(item.label.replace(' ', '_'));
+                      window.location = "/c/" + escape(item.label.replace(/\ /g, '_'));
                   } else {
-                      window.location = "/a/" + escape(item.label.replace(' ', '_'));
+                      window.location = "/a/" + escape(item.label.replace(/\ /g, '_'));
                   }
               }
           });

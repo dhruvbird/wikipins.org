@@ -6,6 +6,10 @@
     <script type="text/javascript" src="/static/md5.js"></script>
     <script type="text/javascript" src="/static/imagesLoaded.js"></script>
     <script type="text/javascript" src="/static/underscore-min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.0/jquery-ui.min.js"></script>
+
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.0/themes/base/jquery-ui.css">
+
     <style type="text/css">
       body {
           background-color: #EEEEEE;
@@ -76,11 +80,11 @@
           width: 300px;
           margin-left: 25px;
       }
-      .search-box {
+      #search-box {
           margin-right: 0;
           float: left;
       }
-      .search-button {
+      #search-button {
           margin-left: 0px;
           width: 25px;
           float: left;
@@ -97,8 +101,8 @@
 
       <div id="header">
         <div class="search">
-          <input type="text" class="search-box" value="Search" />
-          <input type="button" class="search-button" />
+          <input type="text" id="search-box" value="Search" />
+          <input type="button" id="search-button" />
         </div>
         <div id="htext">
           <span>Wikipins - A graphical wikipedia navigation experience!</span>
@@ -345,14 +349,42 @@
           });
       }
 
+      function get_wiki_entries_by_prefix(term, cb) {
+          $.ajax({
+              url: "http://autocomplete.wikipins.org/suggest/",
+              dataType: 'jsonp',
+              data: { q: term.term, n: 10 },
+              success: function(data) {
+                  console.log(data);
+                  data.articles = _.uniq(data.articles, false, function(a) {
+                      return a.phrase;
+                  });
+                  data.categories = _.uniq(data.categories, false, function(a) {
+                      return a.phrase;
+                  });
+                  var opts = [ ];
+                  data.categories.forEach(function(e) {
+                      opts.push({ label: e.phrase, value: "Category:" + e.phrase });
+                  });
+                  data.articles.forEach(function(e) {
+                      opts.push({ label: e.phrase, value: "Article:" + e.phrase });
+                  });
+                  cb(opts);
+              },
+              error: function() {
+                  cb([]);
+              }
+          });
+      }
+
       $().ready(function() {
-          $(".search-box").keyup(function(event) {
+          $("#search-box").keyup(function(event) {
               if (event.keyCode == 13) {
                   alert("Sorry, not implemented");
               }
           });
 
-          $(".search-button").click(function(event) {
+          $("#search-button").click(function(event) {
               alert("Sorry, not implemented");
           });
 
@@ -370,6 +402,21 @@
           console.log("htext_width:", htext_width);
 
           $("#htext").css('width', (htext_width + 5) + "px");
+
+          $("#search-box").autocomplete({
+              source: get_wiki_entries_by_prefix,
+              select: function(event, ui) {
+                  console.log("autocomplete on select");
+                  console.log(event, ui);
+                  var item = ui.item;
+                  if (item.value.search(/^Category:/) == 0) {
+                      window.location = "/c/" + escape(item.label.replace(' ', '_'));
+                  }
+              },
+              close: function(event, ui) {
+                  console.log("autocomplete on close");
+              }
+          });
       });
     </script>
   </body>

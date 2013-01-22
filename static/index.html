@@ -135,8 +135,15 @@
     </div>
 
     <script type="text/javascript">
+
+      if (!window.console) {
+          window.console = { log:   function() { },
+                             error: function() { }
+                           };
+      }
+
       function get_image_url(file_name, width, ns) {
-          ns = ns || 'commons'
+          ns = ns || 'commons';
           file_name = file_name.replace(/\ /g, "_");
           var md5sum = hex_md5(file_name);
           var img_url = '';

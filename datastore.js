@@ -1,8 +1,12 @@
-var mysql = require('mysql');
-var _     = require('underscore');
+var mysql  = require('mysql');
+var _      = require('underscore');
+var config = require('./config.js');
 
 var imageFileRE = /[^\|]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/i;
 var redundantPrefixRE = /^(Image|File):/i;
+
+
+var db_name = 'wikipins';
 
 function clean_image_name(name) {
     name = name.replace(redundantPrefixRE, '');
@@ -10,16 +14,10 @@ function clean_image_name(name) {
     return m ? m[0] : '';
 }
 
-
 function get_conn() {
-    var connection = mysql.createConnection({
-        multipleStatements: true,
-        // host: 'localhost',
-        host: 'ec2-50-16-38-126.compute-1.amazonaws.com',
-        user: 'root',
-        database: 'wikipins2',
-        charset: 'utf8_unicode_ci'
-    });
+    var db_config = config.db;
+    db_config.database = db_name;
+    var connection = mysql.createConnection(db_config);
     return connection;
 }
 
@@ -236,6 +234,10 @@ function get_multi_abstracts_by_title(titles, cb) {
     });
 }
 
+function set_db_name(dbname) {
+    db_name = dbname;
+}
+
 function test(which) {
     if (which.get_multi_abstracts_by_title) {
         get_multi_abstracts_by_title(which.get_multi_abstracts_by_title, function(abstracts) {
@@ -294,4 +296,4 @@ exports.get_category_titles                 = get_category_titles;
 exports.get_multi_category_images_and_count = get_multi_category_images_and_count;
 exports.get_multi_categories_by_titles      = get_multi_categories_by_titles;
 exports.get_random_category_images          = get_random_category_images;
-
+exports.set_db_name                         = set_db_name;

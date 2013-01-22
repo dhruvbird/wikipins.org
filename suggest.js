@@ -9,7 +9,7 @@ var acendpoint = '';
 
 function make_ac_request(url, params, cb) {
     url += "?" + qs.stringify(params);
-    console.log("url", url);
+    // console.log("url", url);
     request.get(url, function(error, response, body) {
         if (error || response.statusCode != 200) {
             console.error(error);
@@ -17,7 +17,7 @@ function make_ac_request(url, params, cb) {
         }
         var jbody = [ ];
         try { jbody = JSON.parse(body); } catch(ex) { console.error(ex); }
-        console.log(jbody);
+        // console.log(jbody);
         jbody = jbody.map(function(entry) {
             entry.phrase = entry.phrase.substr(2);
             return entry;
@@ -55,7 +55,7 @@ function main() {
     app.get("/suggest[/]?", function(req, res) {
         var q = unescape(req.query.q || '');
         var n = unescape(req.query.n || 16);
-        console.log("q", q, "n", n);
+        // console.log("q", q, "n", n);
         var ares = [ ];
         var cres = [ ];
         var nresponses = 0;

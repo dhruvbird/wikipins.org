@@ -9,7 +9,7 @@ var acendpoint = '';
 
 function make_ac_request(url, params, cb) {
     url += "?" + qs.stringify(params);
-    // console.log("url", url);
+    console.log("url", url);
     request.get(url, function(error, response, body) {
         if (error || response.statusCode != 200) {
             console.error(error);
@@ -55,7 +55,7 @@ function main() {
     app.get("/suggest[/]?", function(req, res) {
         var q = unescape(req.query.q || '');
         var n = unescape(req.query.n || 16);
-        // console.log("q", q, "n", n);
+        console.log("q", q, "n", n);
         var ares = [ ];
         var cres = [ ];
         var nresponses = 0;
@@ -67,12 +67,12 @@ function main() {
             });
         }
 
-        make_ac_request(acendpoint, { q: "a:" + q, n: n }, function(jres) {
+        make_ac_request(acendpoint, { q: "a:" + q, n: Math.ceil(n/2) }, function(jres) {
             ares = jres;
             if (++nresponses == 2) response_cb();
         });
 
-        make_ac_request(acendpoint, { q: "c:" + q, n: n }, function(jres) {
+        make_ac_request(acendpoint, { q: "c:" + q, n: Math.ceil(n/2) }, function(jres) {
             cres = jres;
             if (++nresponses == 2) response_cb();
         });

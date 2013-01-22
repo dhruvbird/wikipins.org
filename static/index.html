@@ -92,6 +92,12 @@
       #htext {
           margin: auto;
       }
+      .ui-widget {
+          font-size: 0.9em;
+      }
+      .search-box-initial {
+          color: #888888;
+      }
     </style>
   </head>
 
@@ -378,7 +384,39 @@
       }
 
       $().ready(function() {
-          $("#search-box").keyup(function(event) {
+          var search_box = $("#search-box");
+          search_box.data('state', 'initial');
+          search_box.addClass('search-box-initial');
+          search_box.focus(function(event) {
+              if (search_box.data('state') == 'initial') {
+                  search_box.val('');
+                  search_box.removeClass('search-box-initial');
+                  search_box.data('state', 'typing');
+              }
+          });
+          search_box.blur(function(event) {
+              if (jQuery.trim(search_box.val()).length == 0) {
+                  search_box.addClass('search-box-initial');
+                  search_box.data('state', 'initial');
+                  search_box.val('Search');
+              }
+          });
+
+/*
+          search_box.change(function(event) {
+              console.log("foo");
+              if (jQuery.trim(search_box.val()).length == 0) {
+                  search_box.addClass('search-box-initial');
+                  search_box.data('state', 'initial');
+                  search_box.val('Search');
+              } else {
+                  search_box.removeClass('search-box-initial');
+                  search_box.data('state', 'typing');
+              }
+          });
+*/
+
+          search_box.keyup(function(event) {
               if (event.keyCode == 13) {
                   alert("Sorry, not implemented");
               }
@@ -406,15 +444,12 @@
           $("#search-box").autocomplete({
               source: get_wiki_entries_by_prefix,
               select: function(event, ui) {
-                  console.log("autocomplete on select");
-                  console.log(event, ui);
                   var item = ui.item;
                   if (item.value.search(/^Category:/) == 0) {
                       window.location = "/c/" + escape(item.label.replace(' ', '_'));
+                  } else {
+                      window.location = "/a/" + escape(item.label.replace(' ', '_'));
                   }
-              },
-              close: function(event, ui) {
-                  console.log("autocomplete on close");
               }
           });
       });

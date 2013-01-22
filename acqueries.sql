@@ -84,5 +84,4 @@ INSERT INTO enallhits(title, hits)
  ON C.category = EH.title 
  WHERE EH.type = 'C';
 
-SELECT title, hits INTO OUTFILE '/tmp/enallhits.tsv' 
-FROM enallhits;
+SELECT hits, convert(title using latin1) INTO OUTFILE '/tmp/enallhits.tsv' FROM enallhits;

@@ -4,13 +4,14 @@ var fs      = require("fs");
 var app     = express();
 var ds      = require("./datastore.js");
 
-function serve_static_file(req, res, file_path) {
+function serve_static_file(req, res, file_path, encoding) {
+    encoding = encoding || 'utf8';
     var index_path = require.resolve(file_path);
     var index_fd = fs.openSync(index_path, 'r');
     var index_stream = fs.createReadStream(index_path, {
         fd: index_fd,
-        encoding: 'utf8'
-        });
+        encoding: encoding
+    });
     index_stream.pipe(res);
 }
 
@@ -75,7 +76,12 @@ function main() {
     app.get("/", function(req, res) {
         serve_static_file(req, res, "./static/index.html");
     });
-    
+
+    app.get("/favicon.gif", function(req, res) {
+        res.setHeader('Content-Type', 'image/gif');
+        res.send(fs.readFileSync("./favicon.gif"));
+    });
+
     app.get("/c/[^/]+[/]?", function(req, res) {
         serve_static_file(req, res, "./static/index.html");
     });

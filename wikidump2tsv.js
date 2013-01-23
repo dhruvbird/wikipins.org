@@ -187,15 +187,19 @@ function main() {
     var image_out    = fs.openSync(opts['image'], 'w');
     var cimage_out   = fs.openSync(opts['cimage'], 'w');
 
-    var categoryRE = /\[\[Category:[^\]\n]+\]\]/g;
-    var catNameRE  = /\[\[Category:([^\]\n]+)\]\]/;
-    var redirectRE = /#REDIRECT (.+)/;
+    var categoryRE = /\[\[Category:[^\]\n\|]+(\|[^\]\n]+)?\]\]/ig;
+    var catNameRE  = /\[\[Category:([^\]\n\|]+)/i;
 
     function on_page(page) {
 	var title = page.getChildText('title').trim();
 	var text  = page.getChild('revision').getChildText('text').trim();
         var ns    = Number(page.getChildText('ns').trim());
 	var categories = text.match(categoryRE) || [ ];
+        var redirect   = page.getChild('redirect');
+        var redirect_to = '';
+        if (redirect) {
+            redirect_to = redirect.attrs['title'] || '';
+        }
         narticles += 1;
 
         if (title.length === 0) {
@@ -245,32 +249,29 @@ function main() {
             // console.error(lines);
         }
 
-        if (lines.length > 0) {
-            var mr = lines[0].match(redirectRE);
-            if (mr) {
-                fs.writeSync(redirect_out, title + "\t" + mr[1] + "\n");
-                nprocessed += 1;
-            } else {
-                for (var i = 0; i < lines.length; ++i) {
-                    var line = trim_to_read(lines[i]);
-                    if (i == 0 && title == MONITOR_TITLE) {
-                        // console.error(lines);
-                        // console.error("LINE:", line);
-                    }
+        nprocessed += 1;
 
-	            if (line.length > 63 && is_readable(line)) {
-                        _abstract = line;
-                        break;
-	            }
+        if (redirect_to) {
+            fs.writeSync(redirect_out, title + "\t" + redirect_to + "\n");
+        } else if (lines.length > 0) {
+            for (var i = 0; i < lines.length; ++i) {
+                var line = trim_to_read(lines[i]);
+                if (i == 0 && title == MONITOR_TITLE) {
+                    // console.error(lines);
+                    // console.error("LINE:", line);
                 }
-
-                if (_abstract) {
-                    fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
-                    nprocessed += 1;
-
-                } // if (_abstract)
-
-            } // else
+                
+	        if (line.length > 63 && is_readable(line)) {
+                    _abstract = line;
+                    break;
+	        }
+            }
+            
+            if (_abstract) {
+                fs.writeSync(abstract_out, title + "\t" + _abstract + "\t" + img + "\n");
+                nprocessed += 1;
+                
+            } // if (_abstract)
 
         } // if (lines.length > 0)
 

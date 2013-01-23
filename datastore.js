@@ -240,6 +240,23 @@ function get_multi_abstracts_by_title(titles, cb) {
     });
 }
 
+function get_category_abstracts(category, cb) {
+    var connection = get_conn();
+    connection.query("SELECT A.title AS title, A.abstract AS abstract, A.image AS image " +
+                     "FROM categories C INNER JOIN abstracts A " +
+                     "ON A.title=C.title COLLATE utf8_unicode_ci " +
+                     "WHERE C.category = ?",
+                     [ category ], function(err, rows, fields) {
+                         if (err) {
+                             console.error(err);
+                             cb([]);
+                             return;
+                         }
+                         cb(rows);
+                     });
+    connection.end();
+}
+
 function set_db_name(dbname) {
     db_name = dbname;
 }
@@ -303,3 +320,4 @@ exports.get_multi_category_images_and_count = get_multi_category_images_and_coun
 exports.get_multi_categories_by_titles      = get_multi_categories_by_titles;
 exports.get_random_category_images          = get_random_category_images;
 exports.set_db_name                         = set_db_name;
+exports.get_category_abstracts              = get_category_abstracts;

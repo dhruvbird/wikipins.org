@@ -50,10 +50,8 @@ function main() {
             res.send("[]");
             return;
         }
-        ds.get_category_titles(category, function(titles) {
-            ds.get_multi_abstracts_by_title(titles, function(abstracts) {
-                res.jsonp(abstracts);
-            });
+        ds.get_category_abstracts(category, function(abstracts) {
+            res.jsonp(abstracts);
         });
     });
     

@@ -18,10 +18,10 @@
 // as an argument, and the collection as `this`
 
 $.fn.imagesLoaded = function( callback ){
-    var elems = this.find( 'img' ),
-    elems_src = [],
-    self = this,
-    len = elems.length;
+    var elems = this.find( 'img' );
+    var elems_src = [];
+    var self = this;
+    var len = elems.length;
 
     if ( !elems.length ) {
         callback.call( this );

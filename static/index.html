@@ -2,10 +2,10 @@
   <head>
     <title>Wikipins.org</title>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script type="text/javascript" src="/static/jquery.wookmark.js"></script>
     <script type="text/javascript" src="/static/md5.js"></script>
-    <script type="text/javascript" src="/static/imagesLoaded.js"></script>
     <script type="text/javascript" src="/static/underscore-min.js"></script>
+    <script type="text/javascript" src="/static/jquery.unveil.min.js"></script>
+    <script type="text/javascript" src="/static/pinlike.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.0/jquery-ui.min.js"></script>
 
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.0/themes/base/jquery-ui.css">
@@ -33,12 +33,9 @@
       #pin-template, #article-pin-template {
           display: none;
       }
-      div.pin-before-wookmark {
-          float: left;
-          margin: 10px 10px 10px 10px;
-      }
       div.pin {
           width: 240px;
+          margin: 10px auto 10px auto;
           padding: 15px 15px 15px 15px;
           box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
           -webkit-box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
@@ -53,7 +50,8 @@
           clear: both;
       }
       #content {
-          position: relative;
+          margin-left: auto;
+          margin-right: auto;
       }
       .category-name, .title {
           font-weight: bold;
@@ -163,9 +161,6 @@
           return img_url;
       }
 
-      function on_image_loaded() {
-          // console.log(arguments);
-      }
       function on_image_error_01() {
           var img = $(this);
           console.log("[1] Error loading:", img.data('img-name'));
@@ -209,7 +204,6 @@
       function get_pin_div(item) {
           var div = $("#pin-template").clone()
               .attr("id", null)
-              .addClass('pin-before-wookmark')
               .addClass("pin")
               .addClass("category-pin");
           div.find("a.pin-click").attr('href', '/c/' + escape(item.category.replace(/\ /g, '_')));
@@ -222,10 +216,11 @@
           var imgs = images.map(function(img_name, idx) {
               var img_width = idx > 0 ? sm_width : 240;
               var img_url = get_image_url(img_name, img_width);
-              var img  = $("<img />").attr('src', img_url)
+              var img  = $("<img />")
+                  .attr('src', '/static/grey.gif')
+                  .attr('data-src', img_url)
                   .attr('width', img_width + "px")
                   .addClass('pin-image')
-                  .on('load', on_image_loaded)
                   .on('error', on_image_error_01);
               if (idx > 0) {
                   img.attr('height', img_width + "px");
@@ -252,7 +247,6 @@
       function get_pin_div_for_article(item) {
           var div = $("#article-pin-template").clone()
               .attr("id", null)
-              .addClass('pin-before-wookmark')
               .addClass("pin")
               .addClass("article-pin");
           div.find('a.pin-click').attr('href', "http://en.wikipedia.org/wiki/" + item.title.replace(/\ /, '_'));
@@ -265,10 +259,11 @@
           } else {
               var img_url  = get_image_url(img_name, 240);
               var bigger   =  $("<div></div>").addClass("bigger");
-              var img      = $("<img />").attr('src', img_url)
+              var img      = $("<img />")
+                  .attr('src', '/static/grey.gif')
+                  .attr('data-src', img_url)
                   .attr('width', "240px")
                   .addClass('pin-image')
-                  .on('load', on_image_loaded)
                   .on('error', on_image_error_01);
 
               img.data('img-name', img_name);
@@ -314,13 +309,8 @@
                       var div  = get_pin_div_for_article(item);
                       $("#content").append(div);
                   });
-                  $("#content").imagesLoaded(function() {
-                      $("#content .pin").removeClass('pin-before-wookmark');
-                      $("#content .pin").wookmark({
-                          offset: 15,
-                          itemWidth: 270
-                      });
-                      setTimeout(add_vspacer, 1000);
+                  $("#content .pin").pinlike({
+                      colwidth: 290
                   });
               }
           });
@@ -350,14 +340,10 @@
                       var div  = get_pin_div(item);
                       $("#content").append(div);
                   });
-                  $("#content").imagesLoaded(function() {
-                      $("#content .pin").removeClass('pin-before-wookmark');
-                      $("#content .pin").wookmark({
-                          offset: 15,
-                          itemWidth: 270
-                      });
-                      setTimeout(add_vspacer, 1000);
+                  $("#content .pin").pinlike({
+                      colwidth: 290
                   });
+                  $("#content .pin img.pin-image").unveil(200);
               }
           });
       }
@@ -390,7 +376,19 @@
           });
       }
 
+      function reflow_pins() {
+          var ww = $(window).width();
+          $("#content-wrapper").width(ww - 20);
+          var cw = Math.floor(ww / 290) * 291;
+          // console.log("reflowing pins with cw =", cw);
+          $("#content").width(cw);
+          $("#content .pin").pinlike();
+      }
+
       $().ready(function() {
+          $(window).resize(reflow_pins);
+          reflow_pins();
+
           var search_box = $("#search-box");
           search_box.data('state', 'initial');
           search_box.addClass('search-box-initial');

@@ -26,7 +26,6 @@ var get_random_category_images = (function(n, delay) {
     var prev_ts = new Date() - delay - 1000;
     return function(cb) {
         cb = _.once(cb);
-        console.log(new Date() - prev_ts, delay);
         if (new Date() - prev_ts < delay) {
             cb(cached);
             return;

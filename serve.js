@@ -28,6 +28,11 @@ function main() {
 
     app.set("jsonp callback", true);
 
+    app.use(function(req, res, next) {
+        console.log("%s - [%s] - %s - %s", req.ip, String(new Date()), req.method, req.url);
+        next();
+    });
+
     // /random_categories/
     app.get("/random_categories[/]?", function(req, res) {
         ds.get_random_category_images(function(category_images) {

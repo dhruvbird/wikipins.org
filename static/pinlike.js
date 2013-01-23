@@ -1,7 +1,15 @@
 $.fn.pinlike = function(opts) {
+    var elems = this;
     var outer = $(this).first().parent();
     if (outer.length == 0) {
         return this;
+    }
+
+    if (outer.hasClass('pin-column')) {
+        outer = outer.parent();
+        elems.detach();
+        outer.find(".pin-column").remove();
+        outer.append(elems);
     }
 
     opts = opts || outer.data('opts');
@@ -9,8 +17,6 @@ $.fn.pinlike = function(opts) {
         return this;
     }
     outer.data('opts', opts);
-
-    var elems = this;
 
     if (!elems.length) {
         return this;
@@ -30,9 +36,10 @@ $.fn.pinlike = function(opts) {
         var i;
         for (i = 0; i < ncols; ++i) {
             colheights[i] = 0;
-            cols[i] = $("<div></div>").
-                css('width', colwidth + "px").
-                css('float', 'left');
+            cols[i] = $("<div></div>")
+                .addClass('pin-column')
+                .css('width', colwidth + "px")
+                .css('float', 'left');
         }
 
         elems.each(function(index, elem) {

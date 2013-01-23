@@ -109,7 +109,7 @@
           <input type="button" id="search-button" />
         </div>
         <div id="htext">
-          <span>Wikipins - A graphical wikipedia navigation experience!</span>
+          <span><a href="/">Wikipins</a> - A graphical wikipedia navigation experience!</span>
         </div>
         <div class="clear-both"></div>
 
@@ -442,7 +442,9 @@
           if (m1) {
               var category = unescape(m1[1]).replace(/_/g, ' ');
               console.log("category:", category);
-              $("#header span").html(category);
+              $("#header span").html('')
+                  .append($("<a>Wikipins</a>").attr('href', '/'))
+                  .append(" - " + category);
               load_category_pins(category);
           } else {
               load_category_list("/random_categories/");

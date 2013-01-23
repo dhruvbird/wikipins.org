@@ -312,6 +312,10 @@
                   $("#content .pin").pinlike({
                       colwidth: 290
                   });
+                  $("#content .pin img.pin-image").unveil(300);
+                  setTimeout(function() {
+                      $(window).trigger('scroll');
+                  }, 20);
               }
           });
       }
@@ -343,7 +347,10 @@
                   $("#content .pin").pinlike({
                       colwidth: 290
                   });
-                  $("#content .pin img.pin-image").unveil(200);
+                  $("#content .pin img.pin-image").unveil(300);
+                  setTimeout(function() {
+                      $(window).trigger('scroll');
+                  }, 20);
               }
           });
       }

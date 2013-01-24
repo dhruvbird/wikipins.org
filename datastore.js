@@ -266,7 +266,6 @@ function get_related_categories_images(title, cb) {
                      "CL.category=C.category COLLATE utf8_unicode_ci AND " +
                      "C.title=?",
                      [ title ], function(err, rows, fields) {
-                         console.log(rows);
                          if (err) {
                              console.error(err);
                              cb([]);

@@ -101,7 +101,7 @@ function main() {
         res.send(fs.readFileSync("./favicon.gif"));
     });
 
-    app.get("/(a\|c)/[^/]+[/]?", function(req, res) {
+    app.get("/[ac]/[^/]+[/]?", function(req, res) {
         serve_static_file(req, res, "./static/index.html");
     });
 

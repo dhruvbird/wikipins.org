@@ -376,6 +376,7 @@
       }
 
       function populate_category_pins_on_page(data, parent) {
+          console.log("populate_category_pins_on_page(", data, ")");
           var a = [ ];
           var key;
           for (key in data) {
@@ -388,6 +389,7 @@
                   });
               }
           }
+          console.log("a", a);
           a = a.filter(filter_empty_item);
           a.sort(item_cmp);
           a.forEach(function(item) {
@@ -444,7 +446,7 @@
                   category: category
               },
               success: function(a) {
-                  populate_category_pins_on_page(a, parent);
+                  populate_article_pins_on_page(a, parent);
               }
           });
       }

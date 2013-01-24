@@ -32,13 +32,21 @@
           -webkit-box-shadow: inset 0 1px white,0 1px 3px rgba(34, 25, 25, 0.4);
           box-shadow: inset 0 1px white,0 1px 3px rgba(34, 25, 25, 0.4);
       }
-      #pin-template, #article-pin-template {
+      #pin-template, #article-pin-template, #article-broad-pin-template {
           display: none;
       }
       div.pin {
           width: 240px;
           margin: 10px auto 10px auto;
           padding: 15px 15px 15px 15px;
+          box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
+          -webkit-box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
+          background-color: #FFFFFF;
+      }
+      div.broad-pin {
+          width: 600px;
+          padding: 15px 15px 15px 15px;
+          margin: 0 auto 0 auto;
           box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
           -webkit-box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
           background-color: #FFFFFF;
@@ -54,6 +62,10 @@
       #content {
           margin-left: auto;
           margin-right: auto;
+      }
+      #content2 {
+          margin: 15 auto 20 auto;
+          display: none;
       }
       .category-name, .title {
           font-weight: bold;
@@ -71,6 +83,10 @@
       .abstract {
           margin-top: 15px;
           font-family: "Helvetica Neue","Segoe UI","Nimbus Sans L","Liberation Sans","Open Sans",FreeSans,Arial,sans-serif;
+      }
+      .broad-abstract {
+          font-family: "Helvetica Neue","Segoe UI","Nimbus Sans L","Liberation Sans","Open Sans",FreeSans,Arial,sans-serif;
+          padding-left: 15px;
       }
       div.vspacer {
           position: absolute;
@@ -104,11 +120,12 @@
   <body>
     <div id="content-wrapper">
       <div id="content"></div>
+      <div id="content2"></div>
 
       <div id="header">
         <div class="search">
           <input type="text" id="search-box" value="Search" />
-          <input type="button" id="search-button" />
+          <!-- input type="button" id="search-button" / Dont allow free-text search. Only select from drop-down for now. -->
         </div>
         <div id="htext">
           <span><a href="/">Wikipins</a> - A graphical wikipedia navigation experience!</span>
@@ -119,18 +136,30 @@
 
     </div>
 
-    <div id="pin-template">
+    <div id="pin-template" class="pin">
       <a class="pin-click">
         <div class="category-name"></div>
         <div class="image"></div>
       </a>
     </div>
 
-    <div id="article-pin-template">
+    <div id="article-pin-template" class="pin">
       <a class="pin-click">
         <div class="title"></div>
         <div class="image"></div>
         <div class="abstract"></div>
+      </a>
+    </div>
+
+    <div id="article-broad-pin-template" class="broad-pin">
+      <a class="pin-click">
+        <div class="title"></div>
+        <table border="0">
+          <tr>
+            <td class="image"></td>
+            <td class="broad-abstract"></td>
+          </tr>
+        </table>
       </a>
     </div>
 
@@ -203,7 +232,7 @@
           return item.images.length > 0;
       }
 
-      function get_pin_div(item) {
+      function get_category_pin_div(item) {
           var div = $("#pin-template").clone()
               .attr("id", null)
               .addClass("pin")
@@ -246,7 +275,7 @@
           return div;
       }
 
-      function get_pin_div_for_article(item) {
+      function get_article_pin_div(item) {
           var div = $("#article-pin-template").clone()
               .attr("id", null)
               .addClass("pin")
@@ -264,6 +293,35 @@
               var img      = $("<img />")
                   .attr('src', '/static/grey.gif')
                   .attr('data-src', img_url)
+                  .attr('width', "240px")
+                  .addClass('pin-image')
+                  .on('error', on_image_error_01);
+
+              img.data('img-name', img_name);
+              img.data('img-width', 240);
+
+              bigger.append(img);
+              div.find(".image").append(bigger);
+          }
+
+          return div;
+      }
+
+      function get_article_broad_pin_div(item) {
+          var div = $("#article-broad-pin-template").clone()
+              .attr("id", null);
+          div.find('a.pin-click').attr('href', "http://en.wikipedia.org/wiki/" + item.title.replace(/\ /, '_'));
+          div.find('.title').html(item.title);
+          div.find('.broad-abstract').html(item['abstract']);
+
+          var img_name = item.image.trim();
+          if (!img_name) {
+              div.find(".image").remove();
+          } else {
+              var img_url  = get_image_url(img_name, 240);
+              var bigger   =  $("<div></div>").addClass("bigger");
+              var img      = $("<img />")
+                  .attr('src', img_url)
                   .attr('width', "240px")
                   .addClass('pin-image')
                   .on('error', on_image_error_01);
@@ -298,8 +356,87 @@
           $("#content").append(vspacer);
       }
 
-      function load_category_pins(category) {
-          console.log("load_category_pins(", category, ")");
+      function populate_article_pins_on_page(a, parent) {
+          a.forEach(function(item) {
+              var div  = get_article_pin_div(item);
+              parent.append(div);
+          });
+          parent.find(".pin").pinlike({
+              colwidth: 290
+          });
+          parent.find(".pin img.pin-image").unveil(150);
+          // Trigger the 'scroll' event so that the
+          // unveil-plugin can start showing images. This is
+          // an issue since the unveil-plugin start working
+          // only when the scroll OR resize event on the
+          // window is fired.
+          setTimeout(function() {
+              $(window).trigger('scroll');
+          }, 20);
+      }
+
+      function populate_category_pins_on_page(data, parent) {
+          var a = [ ];
+          var key;
+          for (key in data) {
+              var item = data[key];
+              if (item.length > 0) {
+                  a.push({
+                      category: key,
+                      count: item[0].count,
+                      images: _.pluck(item, 'image')
+                  });
+              }
+          }
+          a = a.filter(filter_empty_item);
+          a.sort(item_cmp);
+          a.forEach(function(item) {
+              var div  = get_category_pin_div(item);
+              parent.append(div);
+          });
+          parent.find(".pin").pinlike({
+              colwidth: 290
+          });
+          parent.find(".pin img.pin-image").unveil(150);
+          setTimeout(function() {
+              $(window).trigger('scroll');
+          }, 20);
+      }
+
+      function load_related_category_pins(title, parent) {
+          console.log("load_related_category_article_pins(", title, ")");
+          $.ajax({
+              url: "/related_categories/",
+              dataType: 'jsonp',
+              data: {
+                  title: title
+              },
+              success: function(a) {
+                  populate_category_pins_on_page(a, parent);
+              }
+          });
+      }
+
+      function load_single_article_pin(title, parent) {
+          console.log("load_article_pins(", title, ")");
+          $.ajax({
+              url: "/article_abstract/",
+              dataType: 'jsonp',
+              data: {
+                  title: title
+              },
+              success: function(a) {
+                  if (a.length === 0) {
+                      return;
+                  }
+                  var div  = get_article_broad_pin_div(a[0]);
+                  parent.append(div);
+              }
+          });
+      }
+
+      function load_article_pins(category, parent) {
+          console.log("load_article_pins(", category, ")");
           $.ajax({
               url: "/category_abstracts/",
               dataType: 'jsonp',
@@ -307,52 +444,17 @@
                   category: category
               },
               success: function(a) {
-                  a.forEach(function(item) {
-                      var div  = get_pin_div_for_article(item);
-                      $("#content").append(div);
-                  });
-                  $("#content .pin").pinlike({
-                      colwidth: 290
-                  });
-                  $("#content .pin img.pin-image").unveil(150);
-                  setTimeout(function() {
-                      $(window).trigger('scroll');
-                  }, 20);
+                  populate_category_pins_on_page(a, parent);
               }
           });
       }
 
-      function load_category_list(url) {
+      function load_category_pins(url, parent) {
           $.ajax({
               url:  url,
               dataType: 'jsonp',
               success: function(data) {
-                  console.log(data);
-                  var a = [ ];
-                  var key;
-                  for (key in data) {
-                      var item = data[key];
-                      if (item.length > 0) {
-                          a.push({
-                              category: key,
-                              count: item[0].count,
-                              images: _.pluck(item, 'image')
-                          });
-                      }
-                  }
-                  a = a.filter(filter_empty_item);
-                  a.sort(item_cmp);
-                  a.forEach(function(item) {
-                      var div  = get_pin_div(item);
-                      $("#content").append(div);
-                  });
-                  $("#content .pin").pinlike({
-                      colwidth: 290
-                  });
-                  $("#content .pin img.pin-image").unveil(150);
-                  setTimeout(function() {
-                      $(window).trigger('scroll');
-                  }, 20);
+                  populate_category_pins_on_page(data, parent);
               }
           });
       }
@@ -390,8 +492,12 @@
           $("#content-wrapper").width(ww - 20);
           var cw = Math.floor(ww / 290) * 291;
           // console.log("reflowing pins with cw =", cw);
+
           $("#content").width(cw);
           $("#content .pin").pinlike();
+
+          $("#content2").width(cw);
+          $("#content2 .pin").pinlike();
       }
 
       function goto_search_location(term) {
@@ -443,16 +549,27 @@
               alert("Sorry, not implemented");
           });
 
-          var m1 = window.location.pathname.match(/^\/c\/([^\/]+)\/?$/);
+          var pathname = window.location.pathname;
+          var m1 = pathname.match(/^\/c\/([^\/]+)\/?$/);
+          var m2 = pathname.match(/^\/a\/([^\/]+)\/?$/);
           if (m1) {
               var category = unescape(m1[1]).replace(/_/g, ' ');
               console.log("category:", category);
               $("#header span").html('')
                   .append($("<a>Wikipins</a>").attr('href', '/'))
                   .append(" - " + category);
-              load_category_pins(category);
+              load_article_pins(category, $("#content"));
+          } else if (m2) {
+              var title = unescape(m2[1]).replace(/_/g, ' ');
+              console.log("title:", title);
+              $("#header span").html('')
+                  .append($("<a>Wikipins</a>").attr('href', '/'))
+                  .append(" - " + title);
+              load_single_article_pin(title, $("#content"));
+              load_related_category_pins(title, $("#content2"));
+              $("#content2").css('display', 'block');
           } else {
-              load_category_list("/random_categories/");
+              load_category_pins("/random_categories/", $("#content"));
           }
 
           var htext_width = $("#htext span").width();

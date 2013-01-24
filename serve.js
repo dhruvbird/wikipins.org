@@ -45,30 +45,51 @@ function main() {
     //
     // /category_abstracts/?category=CATEGORY_NAME
     app.get("/category_abstracts[/]?", function(req, res) {
-        var category = unescape(req.query.category);
+        var category = unescape(req.query.category || '').trim();
         if (!category) {
-            res.send("[]");
+            res.jsonp([ ]);
             return;
         }
         ds.get_category_abstracts(category, function(abstracts) {
             res.jsonp(abstracts);
         });
     });
-    
+
+    // Fetch the abstract for a sprcific article given its title.
+    //
+    // /article_abstract/?title=ARTICLE_TITLE
+    app.get("/article_abstract[/]?", function(req, res) {
+        var title = unescape(req.query.title || '').trim();
+        if (!title) {
+            res.jsonp([ ]);
+            return;
+        }
+        ds.get_multi_abstracts_by_title(title, function(abstracts) {
+            res.jsonp(abstracts);
+        });
+    });
+
     // Fetch related categories for a given category name
     //
     // /related_categories/?category=CATEGORY_NAME
     app.get("/related_categories[/]?", function(req, res) {
-        var category = unescape(req.query.category);
-        if (!category) {
-            res.send("[]");
-        return;
+        var category = unescape(req.query.category || '').trim();
+        var title    = unescape(req.query.title || '').trim();
+
+        if (category) {
+            ds.get_related_categories(category, function(related_categories) {
+                res.jsonp(related_categories);
+            });
+        } else if (title) {
+            ds.get_related_categories_images(title, function(related_categories) {
+                res.jsonp(related_categories);
+            });
+        } else {
+            // FIXME - 404
+            res.jsonp([ ]);
         }
-        ds.get_related_categories(category, function(related_categories) {
-            res.jsonp(abstracts);
-        });
     });
-    
+
     app.use('/static/', express.static(__dirname + "/static/"));
 
     app.get("/", function(req, res) {
@@ -80,7 +101,7 @@ function main() {
         res.send(fs.readFileSync("./favicon.gif"));
     });
 
-    app.get("/c/[^/]+[/]?", function(req, res) {
+    app.get("/(a\|c)/[^/]+[/]?", function(req, res) {
         serve_static_file(req, res, "./static/index.html");
     });
 

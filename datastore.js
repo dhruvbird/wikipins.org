@@ -175,10 +175,11 @@ function get_multi_abstracts_by_title_redirect(titles, cb) {
     connection.query("SELECT A.title AS title , A.abstract AS abstract, A.image AS image " +
                      "FROM abstracts A, " +
                      "(SELECT totitle FROM redirects WHERE fromtitle IN (?)) R " +
-                     "WHERE R.totitle = A.title",
+                     "WHERE R.totitle COLLATE utf8_unicode_ci = A.title",
                      [ titles ], function(err, rows, fields) {
                          if (err) {
-                             console.error(err);
+                             console.error(err.stack);
+                             cb([]);
                              return;
                          }
                          rows = rows.map(function(row) {
@@ -203,7 +204,8 @@ function get_multi_abstracts_by_title_noredirect(titles, cb) {
                      "FROM abstracts A WHERE A.title IN (?)",
                      [ titles ], function(err, rows, fields) {
                          if (err) {
-                             console.error(err);
+                             console.error(err.stack);
+                             cb([]);
                              return;
                          }
                          rows = rows.map(function(row) {
@@ -248,7 +250,7 @@ function get_category_abstracts(category, cb) {
                      "WHERE C.category = ?",
                      [ category ], function(err, rows, fields) {
                          if (err) {
-                             console.error(err);
+                             console.error(err.stack);
                              cb([]);
                              return;
                          }

@@ -257,6 +257,27 @@ function get_category_abstracts(category, cb) {
     connection.end();
 }
 
+function get_related_categories_images(title, cb) {
+    var connection = get_conn();
+
+    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count " +
+                     "FROM categories C, category_images CI, category_list CL " +
+                     "WHERE CI.category=C.category COLLATE utf8_unicode_ci AND " +
+                     "CL.category=C.category COLLATE utf8_unicode_ci AND " +
+                     "C.title=?",
+                     [ title ], function(err, rows, fields) {
+                         console.log(rows);
+                         if (err) {
+                             console.error(err);
+                             cb([]);
+                             return;
+                         }
+                         var res = _.groupBy(rows, 'category');
+                         cb(res);
+                     });
+    connection.end();
+}
+
 function set_db_name(dbname) {
     db_name = dbname;
 }
@@ -321,3 +342,4 @@ exports.get_multi_categories_by_titles      = get_multi_categories_by_titles;
 exports.get_random_category_images          = get_random_category_images;
 exports.set_db_name                         = set_db_name;
 exports.get_category_abstracts              = get_category_abstracts;
+exports.get_related_categories_images       = get_related_categories_images;

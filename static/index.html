@@ -225,7 +225,8 @@
       }
 
       function item_cmp(lhs, rhs) {
-          return rhs.images.length - lhs.images.length;
+          var cmp1 = rhs.images.length - lhs.images.length;
+          return (cmp1 === 0 ? rhs.index - lhs.index : cmp1);
       }
 
       function filter_empty_item(item) {
@@ -385,7 +386,8 @@
                   a.push({
                       category: key,
                       count: item[0].count,
-                      images: _.pluck(item, 'image')
+                      images: _.pluck(item, 'image'),
+                      index: a.length
                   });
               }
           }

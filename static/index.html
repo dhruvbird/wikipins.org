@@ -476,10 +476,10 @@
                   });
                   var opts = [ ];
                   data.categories.forEach(function(e) {
-                      opts.push({ label: e.phrase, value: "Category:" + e.phrase });
+                      opts.push({ label: e.phrase + " (category)", value: e.phrase });
                   });
                   data.articles.forEach(function(e) {
-                      opts.push({ label: e.phrase, value: "Article:" + e.phrase });
+                      opts.push({ label: e.phrase + " (article)", value: e.phrase });
                   });
                   cb(opts);
               },
@@ -583,10 +583,10 @@
               source: get_wiki_entries_by_prefix,
               select: function(event, ui) {
                   var item = ui.item;
-                  if (item.value.search(/^Category:/) == 0) {
-                      window.location = "/c/" + escape(item.label.replace(/\ /g, '_'));
+                  if (item.label.search(/\(category\)$/) != -1) {
+                      window.location = "/c/" + escape(item.value.replace(/\ /g, '_'));
                   } else {
-                      window.location = "/a/" + escape(item.label.replace(/\ /g, '_'));
+                      window.location = "/a/" + escape(item.value.replace(/\ /g, '_'));
                   }
               }
           });

@@ -242,12 +242,13 @@ function get_multi_abstracts_by_title(titles, cb) {
     });
 }
 
+// Fetch up to 256 abstracts for a given category.
 function get_category_abstracts(category, cb) {
     var connection = get_conn();
     connection.query("SELECT A.title AS title, A.abstract AS abstract, A.image AS image " +
                      "FROM categories C INNER JOIN abstracts A " +
                      "ON A.title=C.title COLLATE utf8_unicode_ci " +
-                     "WHERE C.category = ?",
+                     "WHERE C.category = ? LIMIT 256",
                      [ category ], function(err, rows, fields) {
                          if (err) {
                              console.error(err.stack);

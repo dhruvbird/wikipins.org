@@ -52,7 +52,7 @@ $.fn.pinlike = function(opts) {
             colheights[mincol] += $(elem).height();
             console.log("height", $(elem).height());
             cols[mincol].append(elem);
-            console.log(colheights);
+            console.log("column heights:", String(colheights));
         });
 
         outer.append(cols);

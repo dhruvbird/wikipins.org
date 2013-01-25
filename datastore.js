@@ -149,11 +149,11 @@ function get_related_categories(category, cb) {
     connection.end();
 }
 
-/* Get the list of titles for a given category name */
+/* Get the list of up to 256 titles for a given category name */
 function get_category_titles(category, cb) {
-    /* SELECT title FROM categories WHERE category = ? */
+    /* SELECT title FROM categories WHERE category = ? LIMIT 256 */
     var connection = get_conn();
-    connection.query("SELECT title FROM categories WHERE category = ?",
+    connection.query("SELECT title FROM categories WHERE category = ? LIMIT 256",
                      [ category ], function(err, rows, fields) {
                          var categories = _.pluck(rows, 'title');
                          cb(categories);

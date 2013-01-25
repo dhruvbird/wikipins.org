@@ -85,3 +85,11 @@ INSERT INTO enallhits(title, hits)
  WHERE EH.type = 'C';
 
 SELECT hits, convert(title using latin1) INTO OUTFILE '/tmp/enallhits.tsv' FROM enallhits;
+
+
+-- Query to get the most popular articles.
+--
+-- SELECT "Popular Articles" AS category, title INTO OUTFILE '/tmp/popular_articles.tsv' 
+-- FROM (SELECT SUBSTR(title, 3) AS title 
+--       FROM enallhits WHERE title like 'A:%' ORDER BY hits DESC LIMIT 150) X 
+-- GROUP BY title;

@@ -110,3 +110,18 @@ LOAD DATA LOCAL INFILE 'image.tsv' IGNORE
      INTO TABLE images
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
+
+-- Load popular articles into the DB
+--
+LOAD DATA LOCAL INFILE 'popular_articles.tsv'
+     INTO TABLE categories
+     FIELDS TERMINATED BY '\t'
+     LINES TERMINATED BY '\n';
+
+INSERT INTO category_list(category, count, id) VALUES('Popular Articles', 80, -10);
+
+INSERT INTO category_images (SELECT C.category, A.title, A.image 
+  FROM categories C, abstracts A 
+  WHERE C.category='Popular Articles' 
+    AND C.title COLLATE utf8_unicode_ci=A.title LIMIT 4
+);

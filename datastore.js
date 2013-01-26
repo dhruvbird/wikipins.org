@@ -4,14 +4,15 @@ var config = require('./config.js');
 
 var imageFileRE = /[^\|]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/i;
 var redundantPrefixRE = /^(Image|File):/i;
-
+var hexRE = /%[A-Z0-9]{2}/;
 
 var db_name = 'wikipins';
 
 function clean_image_name(name) {
-    name = name.replace(redundantPrefixRE, '');
-    var m = name.match(imageFileRE);
-    return m ? m[0] : '';
+    if (name.search(hexRE) != -1) {
+        return new Buffer(unescape(name), 'binary').toString('utf8');
+    }
+    return name;
 }
 
 function get_conn() {
@@ -255,6 +256,11 @@ function get_category_abstracts(category, cb) {
                              cb([]);
                              return;
                          }
+                         rows = rows.map(function(row) {
+                             // FIXME: Move this into wikidump2tsv.js
+                             row.image = clean_image_name(row.image);
+                             return row;
+                         });
                          cb(rows);
                      });
     connection.end();

@@ -74,7 +74,7 @@ var get_random_category_images = (function(n, delay) {
 function get_multi_category_id_images_and_count(category_ids, cb) {
     var connection = get_conn();
 
-    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count " +
+    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count, CI.title AS title " +
                      "FROM category_list CL, category_images CI " +
                      "WHERE CL.category = CI.category AND " +
                      "CL.id IN (?) ",
@@ -99,7 +99,7 @@ function get_multi_category_id_images_and_count(category_ids, cb) {
 function get_multi_category_images_and_count(categories, cb) {
     var connection = get_conn();
 
-    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count " +
+    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count, CI.title AS title " +
                      "FROM category_list CL, category_images CI " +
                      "WHERE CL.category = CI.category AND " +
                      "CI.category IN (?) ",
@@ -269,7 +269,7 @@ function get_category_abstracts(category, cb) {
 function get_related_categories_images(title, cb) {
     var connection = get_conn();
 
-    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count " +
+    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count, CI.title AS title " +
                      "FROM categories C, category_images CI, category_list CL " +
                      "WHERE CI.category=C.category COLLATE utf8_unicode_ci AND " +
                      "CL.category=C.category COLLATE utf8_unicode_ci AND " +

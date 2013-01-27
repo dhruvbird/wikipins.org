@@ -165,12 +165,30 @@
     </div>
 
     <script type="text/javascript">
-
       if (!window.console) {
           window.console = { log:   function() { },
                              error: function() { }
                            };
       }
+
+      _.mixin({
+          zipToObject: function(keys) {
+              var arrays = Array.prototype.slice.call(arguments, 1);
+              var ret = [ ];
+              if (arrays.length < 1) {
+                  return [ ];
+              }
+              var i, j;
+              for (i = 0; i < arrays[0].length; ++i) {
+                  var o = { };
+                  for (j = 0; j < keys.length; ++j) {
+                      o[keys[j]] = arrays[j][i];
+                  }
+                  ret.push(o);
+              }
+              return ret;
+          }
+      });
 
       function get_image_url(file_name, width, ns) {
           ns = ns || 'commons';
@@ -246,19 +264,21 @@
               images = images.slice(0, 1);
           }
           var sm_width = Math.floor(240 / (images.length - 1));
-          var imgs = images.map(function(img_name, idx) {
+          var imgs = images.map(function(img_info, idx) {
               var img_width = idx > 0 ? sm_width : 240;
-              var img_url = get_image_url(img_name, img_width);
+              var img_url = get_image_url(img_info.image, img_width);
               var img  = $("<img />")
                   .attr('src', '/static/grey.gif')
                   .attr('data-src', img_url)
                   .attr('width', img_width + "px")
+                  .attr('title', img_info.title)
+                  .attr('alt', img_info.title)
                   .addClass('pin-image')
                   .on('error', on_image_error_01);
               if (idx > 0) {
                   img.attr('height', img_width + "px");
               }
-              img.data('img-name', img_name);
+              img.data('img-name', img_info.image);
               img.data('img-width', img_width);
               return img;
           });
@@ -387,9 +407,10 @@
                   a.push({
                       category: key,
                       count: item[0].count,
-                      images: _.pluck(item, 'image'),
+                      images: _.zipToObject(['title', 'image'], _.pluck(item, 'title'), _.pluck(item, 'image')),
                       index: a.length
                   });
+                  console.log("final item:", a[a.length-1]);
               }
           }
           console.log("a", a);

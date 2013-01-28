@@ -1,7 +1,7 @@
 #! /bin/bash
 
 function install_packages {
-    apt-get -y install git daemontools mysql-client mysql-server g++ make emacs
+    apt-get -y install git daemontools mysql-client mysql-server g++ make emacs screen
     pushd ~/
     wget "http://nodejs.org/dist/v0.8.18/node-v0.8.18.tar.gz"
     tar -zvxf node-v0.8.18.tar.gz
@@ -19,7 +19,14 @@ function install_packages {
     cd wikipins.org
     npm install .
 
+    mkdir -p /var/log/wikipins
+    mkdir -p /etc/service/wikipins
+
+    cp ~/wikipins.org/daemontools-run /etc/service/wikipins/run
+    chmod +x /etc/service/wikipins/run
+
     echo "PLEASE REMEBER TO CONFIGURE MYSQL's /etc/mysql/my.cnf AND RESTART MYSQLD"
+    echo "ALSO, REMEBER TO RUN: GRANT ALL ON *.* TO 'root'@'HOST' IDENTIFIED BY 'PASSWORD'"
 }
 
 function setup_swap {

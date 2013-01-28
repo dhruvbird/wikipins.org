@@ -21,6 +21,9 @@
           position: absolute;
           top: 80px;
       }
+      img {
+          display: block;
+      }
       #header span {
           font-size: 18px;
       }
@@ -78,8 +81,14 @@
           margin-bottom: 150px;
       }
       div.bigger {
-          overflow: hidden;
+          /* overflow: hidden;*/
           width: 240px;
+          padding-bottom: 0px;
+          margin-bottom: 0px;
+      }
+      div.bigger img {
+          padding-bottom: 0px;
+          margin-bottom: 0px;
       }
       .abstract {
           margin-top: 15px;
@@ -196,14 +205,14 @@
           var md5sum = hex_md5(file_name);
           var img_url = '';
           if (width == 0) {
-              img_url = "http://upload.wikimedia.org/wikipedia/" + ns +
+              img_url = "//upload.wikimedia.org/wikipedia/" + ns +
                   "/" + md5sum[0] + "/" + md5sum.substr(0, 2) + "/" + file_name;
           } else {
               var thumb_name = width + "px-" + file_name;
               if (file_name.search(/\.svg$/i) != -1) {
                   thumb_name += ".png";
               }
-              img_url = "http://upload.wikimedia.org/wikipedia/" + ns +
+              img_url = "//upload.wikimedia.org/wikipedia/" + ns +
                   "/thumb/" + md5sum[0] + "/" +
                   md5sum.substr(0, 2) + "/" +
                   file_name + "/" + thumb_name;
@@ -276,7 +285,7 @@
                   .addClass('pin-image')
                   .on('error', on_image_error_01);
               if (idx > 0) {
-                  img.attr('height', img_width + "px");
+                  img.css('height', img_width + "px");
               }
               img.data('img-name', img_info.image);
               img.data('img-width', img_width);
@@ -286,7 +295,7 @@
           var smaller = $("<div></div>").addClass("smaller");
           bigger.append(imgs[0]);
           imgs.slice(1).forEach(function(img) {
-              img.attr('float', 'left');
+              img.css('float', 'left');
               smaller.append(img);
           });
           div.find(".image").append(bigger);
@@ -302,7 +311,7 @@
               .attr("id", null)
               .addClass("pin")
               .addClass("article-pin");
-          div.find('a.pin-click').attr('href', "http://en.wikipedia.org/wiki/" + item.title.replace(/\ /, '_'));
+          div.find('a.pin-click').attr('href', "//en.wikipedia.org/wiki/" + item.title.replace(/\ /, '_'));
           div.find('.title').html(item.title);
           div.find('.abstract').html(item['abstract']);
 
@@ -332,7 +341,7 @@
       function get_article_broad_pin_div(item) {
           var div = $("#article-broad-pin-template").clone()
               .attr("id", null);
-          div.find('a.pin-click').attr('href', "http://en.wikipedia.org/wiki/" + item.title.replace(/\ /, '_'));
+          div.find('a.pin-click').attr('href', "//en.wikipedia.org/wiki/" + item.title.replace(/\ /, '_'));
           div.find('.title').html(item.title);
           div.find('.broad-abstract').html(item['abstract']);
 
@@ -488,7 +497,7 @@
 
       function get_wiki_entries_by_prefix(term, cb) {
           $.ajax({
-              url: "http://autocomplete.wikipins.org/suggest/",
+              url: "//autocomplete.wikipins.org/suggest/",
               dataType: 'jsonp',
               data: { q: term.term, n: 10 },
               success: function(data) {

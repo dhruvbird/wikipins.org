@@ -36,7 +36,7 @@
           -webkit-box-shadow: inset 0 1px white,0 1px 3px rgba(34, 25, 25, 0.4);
           box-shadow: inset 0 1px white,0 1px 3px rgba(34, 25, 25, 0.4);
       }
-      #pin-template, #article-pin-template, #article-broad-pin-template {
+      #category-pin-template, #article-pin-template, #article-broad-pin-template {
           display: none;
       }
       div.pin {
@@ -124,6 +124,19 @@
       .search-box-initial {
           color: #888888;
       }
+      .pin-actions {
+          display: none;
+          position: absolute;
+      }
+      .btn-goto-wikipedia-page {
+          background-image: url(/static/Wikipedia-favicon.png);
+          height: 25px;
+          width: 70px;
+          background-repeat: no-repeat;
+          background-position: 2px 2px;
+          border-radius: 5px;
+          padding-right: 0px;
+      }
     </style>
   </head>
 
@@ -146,7 +159,7 @@
 
     </div>
 
-    <div id="pin-template" class="pin">
+    <div id="category-pin-template" class="pin">
       <a class="pin-click">
         <div class="category-name"></div>
         <div class="image"></div>
@@ -155,6 +168,9 @@
 
     <div id="article-pin-template" class="pin">
       <a class="pin-click">
+        <div class="pin-actions">
+          <input type="button" class="btn-goto-wikipedia-page" value="&nbsp;&nbsp;ikipedia" />
+        </div>
         <div class="title"></div>
         <div class="image"></div>
         <div class="abstract"></div>
@@ -262,7 +278,7 @@
       }
 
       function get_category_pin_div(item) {
-          var div = $("#pin-template").clone()
+          var div = $("#category-pin-template").clone()
               .attr("id", null)
               .addClass("pin")
               .addClass("category-pin");
@@ -311,7 +327,7 @@
               .attr("id", null)
               .addClass("pin")
               .addClass("article-pin");
-          div.find('a.pin-click').attr('href', "//en.wikipedia.org/wiki/" + item.title.replace(/\ /, '_'));
+          div.find('a.pin-click').attr('href', "/a/" + item.title.replace(/\ /, '_'));
           div.find('.title').html(item.title);
           div.find('.abstract').html(item['abstract']);
 
@@ -404,6 +420,18 @@
           setTimeout(function() {
               $(window).trigger('scroll');
           }, 20);
+
+          $(".btn-goto-wikipedia-page").click(function(event) {
+              var pin = $(this).closest(".pin");
+              var title = pin.find(".title").text();
+              var a = $(this).closest("a");
+              var href = a.attr('href');
+              a.attr('href', "//en.wikipedia.org/wiki/" + title.replace(/\ /g, '_'));
+              setTimeout(function() {
+                  a.attr('href', href);
+              }, 30);
+              // return false;
+          });
       }
 
       function populate_category_pins_on_page(data, parent) {
@@ -543,6 +571,21 @@
           $(window).resize(reflow_pins);
           reflow_pins();
 
+          $(".pin").live('mouseenter', function() {
+              var self = $(this);
+              var pin_actions = self.find(".pin-actions");
+              pin_actions.css('display', 'block');
+              var x = self.position().left;
+              var y = self.position().top;
+              pin_actions.css('top', (y - 50) + "px");
+              pin_actions.css('left', (x + 190) + "px");
+
+          }).live('mouseleave', function() {
+              var self = $(this);
+              var pin_actions = self.find(".pin-actions");
+              pin_actions.css('display', 'none');
+          });
+
           var search_box = $("#search-box");
           search_box.data('state', 'initial');
           search_box.addClass('search-box-initial');
@@ -602,6 +645,7 @@
                   .append($("<a>Wikipins</a>").attr('href', '/'))
                   .append(" - " + category);
               load_article_pins(category, $("#content"));
+
           } else if (m2) {
               var title = unescape(m2[1]).replace(/_/g, ' ');
               console.log("title:", title);

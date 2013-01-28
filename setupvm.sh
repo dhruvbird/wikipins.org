@@ -26,12 +26,12 @@ function setup_swap {
         # We already have swap enabled
         return
     fi
-    sudo dd if=/dev/zero of=/swapfile bs=1024 count=1024k
-    sudo mkswap /swapfile
-    sudo swapon /swapfile
+    dd if=/dev/zero of=/swapfile bs=1024 count=1024k
+    mkswap /swapfile
+    swapon /swapfile
     echo "/swapfile       none    swap    sw      0       0" >> /etc/fstab
-    sudo chown root:root /swapfile 
-    sudo chmod 0600 /swapfile
+    chown root:root /swapfile 
+    chmod 0600 /swapfile
 }
 
 setup_swap

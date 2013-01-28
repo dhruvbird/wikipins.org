@@ -572,6 +572,13 @@
               }
           });
 
+          $(window).keyup(function(event) {
+              console.log(event);
+              if (event.keyCode === 191) {
+                  search_box.trigger('focus');
+              }
+          });
+
           $("#search-button").click(function(event) {
               alert("Sorry, not implemented");
           });

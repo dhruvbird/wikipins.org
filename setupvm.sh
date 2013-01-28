@@ -1,7 +1,7 @@
 #! /bin/bash
 
 function install_packages {
-    apt-get -y install git daemontools mysql-client mysql-server g++ make
+    apt-get -y install git daemontools mysql-client mysql-server g++ make emacs
     pushd ~/
     wget "http://nodejs.org/dist/v0.8.18/node-v0.8.18.tar.gz"
     tar -zvxf node-v0.8.18.tar.gz
@@ -18,6 +18,8 @@ function install_packages {
     git clone "git@github.com:dhruvbird/wikipins.org.git"
     cd wikipins.org
     npm install .
+
+    echo "PLEASE REMEBER TO CONFIGURE MYSQL's /etc/mysql/my.cnf AND RESTART MYSQLD"
 }
 
 function setup_swap {

@@ -66,6 +66,7 @@ var get_random_category_images = (function(n, delay) {
             });
 
         });
+        connection.end();
     };
 })(128, 5 * 60 * 1000); // Cache for 5 minutes.
 
@@ -121,6 +122,8 @@ function get_multi_category_images_and_count(categories, cb) {
 // Returns an array with each element being a hash of the following form:
 // { category: CATEGORY_NAME, count: NUMBER_OF_TIME_THIS_CATEGORY_OCCURS }
 //
+// INFO: Unused
+//
 function get_multi_categories_by_titles(titles, cb) {
     /* SELECT category, COUNT(*) as count FROM categories
        WHERE title IN ? GROUP BY category
@@ -135,6 +138,7 @@ function get_multi_categories_by_titles(titles, cb) {
                      [ titles ], function(err, rows, fields) {
                          cb(rows);
                      });
+    connection.end();
 }
 
 /* Given a category name, return a list of related category names */
@@ -151,6 +155,8 @@ function get_related_categories(category, cb) {
 }
 
 /* Get the list of up to 256 titles for a given category name */
+//
+// INFO: Unused
 function get_category_titles(category, cb) {
     /* SELECT title FROM categories WHERE category = ? LIMIT 256 */
     var connection = get_conn();

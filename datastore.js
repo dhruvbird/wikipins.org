@@ -75,9 +75,10 @@ var get_random_category_images = (function(n, delay) {
 function get_multi_category_id_images_and_count(category_ids, cb) {
     var connection = get_conn();
 
-    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count, CI.title AS title " +
-                     "FROM category_list CL, category_images CI " +
+    connection.query("SELECT CI.category AS category, I.image_name AS image, CL.count AS count, CI.title AS title " +
+                     "FROM category_list CL, category_images CI, images I " +
                      "WHERE CL.category = CI.category AND " +
+                     "I.image_name = REPLACE(CI.image, '_', ' ') " +
                      "CL.id IN (?) ",
                      [ category_ids ], function(err, rows, fields) {
                          if (err) {
@@ -100,9 +101,10 @@ function get_multi_category_id_images_and_count(category_ids, cb) {
 function get_multi_category_images_and_count(categories, cb) {
     var connection = get_conn();
 
-    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count, CI.title AS title " +
-                     "FROM category_list CL, category_images CI " +
+    connection.query("SELECT CI.category AS category, I.image_name AS image, CL.count AS count, CI.title AS title " +
+                     "FROM category_list CL, category_images CI, images I " +
                      "WHERE CL.category = CI.category AND " +
+                     "I.image_name = CI.image AND " +
                      "CI.category IN (?) ",
                      [ category ], function(err, rows, fields) {
                          if (err) {
@@ -179,10 +181,12 @@ function get_multi_abstracts_by_title_redirect(titles, cb) {
         return;
     }
     var connection = get_conn();
-    connection.query("SELECT A.title AS title , A.abstract AS abstract, A.image AS image " +
-                     "FROM abstracts A, " +
-                     "(SELECT totitle FROM redirects WHERE fromtitle IN (?)) R " +
-                     "WHERE R.totitle COLLATE utf8_unicode_ci = A.title",
+    connection.query("SELECT A.title AS title , A.abstract AS abstract, COALESCE(I.image_name, A.image) AS image " +
+                     "FROM abstracts A LEFT OUTER JOIN images I " +
+                     "ON REPLACE(A.image, '_', ' ') = I.image_name " +
+                     "INNER JOIN redirects R " +
+                     "ON R.totitle COLLATE utf8_unicode_ci = A.title " +
+                     "WHERE R.fromtitle IN (?)",
                      [ titles ], function(err, rows, fields) {
                          if (err) {
                              console.error(err.stack);
@@ -207,8 +211,10 @@ function get_multi_abstracts_by_title_noredirect(titles, cb) {
         return;
     }
     var connection = get_conn();
-    connection.query("SELECT A.title AS title, A.abstract AS abstract, A.image AS image " +
-                     "FROM abstracts A WHERE A.title IN (?)",
+    connection.query("SELECT A.title AS title, A.abstract AS abstract, COALESCE(I.image_name, A.image) AS image " +
+                     "FROM abstracts A LEFT OUTER JOIN images I " +
+                     "ON I.image_name = REPLACE(A.image, '_', ' ') " +
+                     "WHERE A.title IN (?)",
                      [ titles ], function(err, rows, fields) {
                          if (err) {
                              console.error(err.stack);
@@ -275,10 +281,11 @@ function get_category_abstracts(category, cb) {
 function get_related_categories_images(title, cb) {
     var connection = get_conn();
 
-    connection.query("SELECT CI.category AS category, CI.image AS image, CL.count AS count, CI.title AS title " +
-                     "FROM categories C, category_images CI, category_list CL " +
+    connection.query("SELECT CI.category AS category, COALESCE(I.image_name, CI.image) AS image, CL.count AS count, CI.title AS title " +
+                     "FROM categories C, category_images CI, category_list CL, images I " +
                      "WHERE CI.category=C.category COLLATE utf8_unicode_ci AND " +
                      "CL.category=C.category COLLATE utf8_unicode_ci AND " +
+                     "REPLACE(CI.image, '_', ' ') = I.image_name AND " +
                      "C.title=?",
                      [ title ], function(err, rows, fields) {
                          if (err) {

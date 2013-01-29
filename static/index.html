@@ -525,7 +525,7 @@
 
       function get_wiki_entries_by_prefix(term, cb) {
           $.ajax({
-              url: "//54.235.121.52/suggest/",
+              url: "//autocomplete.wikipins.org/suggest/",
               dataType: 'jsonp',
               data: { q: term.term, n: 10 },
               success: function(data) {

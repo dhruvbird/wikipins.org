@@ -75,11 +75,11 @@ var get_random_category_images = (function(n, delay) {
         });
         connection.end();
     };
-})(128, 5 * 60 * 1000); // Cache for 5 minutes.
+})(128, 30 * 1000); // Cache for 30 second.
 
-function concat_recently_viewed(rows, cb) {
+function concat_recently_viewed(rows, limit, cb) {
     get_recently_viewed_articles(function(rva) {
-        rva.forEach(function(entry) {
+        rva.slice(0, limit).forEach(function(entry) {
             entry.category = 'Recently Viewed';
             delete entry.abstract;
             entry.count = rva.length;
@@ -109,7 +109,7 @@ function get_multi_category_id_images_and_count(category_ids, cb) {
                          }
                          if (category_ids.indexOf(-20) != -1) {
                              // Exists
-                             concat_recently_viewed(rows, cb);
+                             concat_recently_viewed(rows, 8, cb);
                          } else {
                              var res = _.groupBy(rows, 'category');
                              cb(res);
@@ -140,7 +140,7 @@ function get_multi_category_images_and_count(categories, cb) {
                          }
                          if (category.indexOf('Recently Viewed') != -1) {
                              // Exists
-                             concat_recently_viewed(rows, cb);
+                             concat_recently_viewed(rows, 8, cb);
                          } else {
                              var res = _.groupBy(rows, 'category');
                              cb(res);

@@ -2,4 +2,5 @@
 cd /root/wikipins.org/
 ACC=/var/log/wikipins/access.log
 ERR=/var/log/wikipins/error.log
+export PATH=/opt/node/bin:$PATH
 node serve.js --db=wikipins --port=80 >> "$ACC" 2>> "$ERR"

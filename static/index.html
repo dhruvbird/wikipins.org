@@ -169,7 +169,7 @@
         <div id="htext">
           <span id="page-title"><a href="/">Wikipins</a> - A graphical wikipedia navigation experience!</span>
         </div>
-        <div class="right-menu">
+       <div class="right-menu">
           <span id="about">About</span>
           <span id="contact">Contact<span>
         </div>
@@ -316,7 +316,7 @@
 
       function item_cmp(lhs, rhs) {
           var cmp1 = rhs.images.length - lhs.images.length;
-          return (cmp1 === 0 ? rhs.index - lhs.index : cmp1);
+          return (cmp1 === 0 ? lhs.index - rhs.index : cmp1);
       }
 
       function filter_empty_item(item) {
@@ -493,7 +493,7 @@
                       images: _.zipToObject(['title', 'image'], _.pluck(item, 'title'), _.pluck(item, 'image')),
                       index: a.length
                   });
-                  console.log("final item:", a[a.length-1]);
+                  console.log("a:", a);
               }
           }
           console.log("a", a);

@@ -123,5 +123,5 @@ INSERT INTO category_list(category, count, id) VALUES('Popular Articles', 80, -1
 INSERT INTO category_images (SELECT C.category, A.title, A.image 
   FROM categories C, abstracts A 
   WHERE C.category='Popular Articles' 
-    AND C.title COLLATE utf8_unicode_ci=A.title LIMIT 4
+    AND C.title COLLATE utf8_unicode_ci=A.title LIMIT 8
 );

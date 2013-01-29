@@ -81,7 +81,7 @@ function concat_recently_viewed(rows, limit, cb) {
     get_recently_viewed_articles(function(rva) {
         rva.slice(0, limit).forEach(function(entry) {
             entry.category = 'Recently Viewed';
-            delete entry.abstract;
+            // Don't delete the abstract key since another API call will use it.
             entry.count = rva.length;
         });
         rows = rows.concat(rva);

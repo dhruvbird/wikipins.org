@@ -24,7 +24,7 @@
       img {
           display: block;
       }
-      #header span {
+      #page-title {
           font-size: 18px;
       }
       #header {
@@ -167,7 +167,7 @@
           <!-- input type="button" id="search-button" / Dont allow free-text search. Only select from drop-down for now. -->
         </div>
         <div id="htext">
-          <span><a href="/">Wikipins</a> - A graphical wikipedia navigation experience!</span>
+          <span id="page-title"><a href="/">Wikipins</a> - A graphical wikipedia navigation experience!</span>
         </div>
         <div class="right-menu">
           <span id="about">About</span>
@@ -699,7 +699,7 @@
           if (m1) {
               var category = unescape(m1[1]).replace(/_/g, ' ');
               console.log("category:", category);
-              $("#header span").html('')
+              $("#page-title").html('')
                   .append($("<a>Wikipins</a>").attr('href', '/'))
                   .append(" - " + category);
               load_article_pins(category, $("#content"));
@@ -707,7 +707,7 @@
           } else if (m2) {
               var title = unescape(m2[1]).replace(/_/g, ' ');
               console.log("title:", title);
-              $("#header span").html('')
+              $("#page-title").html('')
                   .append($("<a>Wikipins</a>").attr('href', '/'))
                   .append(" - " + title);
               load_single_article_pin(title, $("#content"));
@@ -717,7 +717,7 @@
               load_category_pins("/random_categories/", $("#content"));
           }
 
-          var htext_width = $("#htext span").width();
+          var htext_width = $("#page-title").width();
           console.log("htext_width:", htext_width);
 
           $("#htext").css('width', (htext_width + 5) + "px");

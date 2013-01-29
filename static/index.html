@@ -32,6 +32,7 @@
           top: -1px;
           background-color: #EEE;
           width: 100%;
+          height: 27px;
           padding: 10px 0 10px 0;
           -webkit-box-shadow: inset 0 1px white,0 1px 3px rgba(34, 25, 25, 0.4);
           box-shadow: inset 0 1px white,0 1px 3px rgba(34, 25, 25, 0.4);
@@ -137,6 +138,21 @@
           border-radius: 5px;
           padding-right: 0px;
       }
+      .right-menu {
+          float: right;
+          width: 160px;
+          position: relative;
+          top: -20px;
+      }
+      #contact {
+          margin-left: 20px;
+      }
+      #about, #contact {
+          cursor: pointer;
+      }
+      #about-content, #contact-content {
+          display: none;
+      }
     </style>
   </head>
 
@@ -153,10 +169,40 @@
         <div id="htext">
           <span><a href="/">Wikipins</a> - A graphical wikipedia navigation experience!</span>
         </div>
+        <div class="right-menu">
+          <span id="about">About</span>
+          <span id="contact">Contact<span>
+        </div>
         <div class="clear-both"></div>
-
       </div>
 
+    </div>
+
+    <div id="about-content">
+      <p>
+        Q. What do you get when you cross <a href="//en.wikipedia.org/" target="_blank">Wikipedia</a> 
+        with <a href="//pinterest.com/" target="_blank">Pinterest</a>?
+      </p>
+      <p>
+        A. <a href="/" target="_blank">Wikipins</a>
+      </p>
+      <p>Wikipins organizes wikipedia categories into pinterest style pins 
+        that let you visually browse wikipedia categories and articles and
+        lets you spot linkages between articles on wikipedia.
+      </p>
+      <p>
+        So go ahead and visually explore wikipedia!
+      </p>
+      <p>
+        Wikipins is made using node.js and is mostly written in javascript. 
+        Wikipins is open source software, and you can find the code on <a href="https://github.com/dhruvbird/wikipins.org" target="_blank">github</a>.
+      </p>
+    </div>
+
+    <div id="contact-content">
+      <p>
+        Just send an email to <a href="mailto:dhruvbird+wikipins@gmail.com">dhruvbird+wikipins@gmail.com</a>
+      </p>
     </div>
 
     <div id="category-pin-template" class="pin">
@@ -584,6 +630,18 @@
               var self = $(this);
               var pin_actions = self.find(".pin-actions");
               pin_actions.css('display', 'none');
+          });
+
+          $("#about").click(function() {
+              $("#about-content").dialog({
+                  title: "About Wikipins"
+              });
+          });
+
+          $("#contact").click(function() {
+              $("#contact-content").dialog({
+                  title: "Contact"
+              });
           });
 
           var search_box = $("#search-box");

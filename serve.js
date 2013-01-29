@@ -39,7 +39,6 @@ function main() {
 
     // /random_categories/
     app.get("/random_categories[/]?", function(req, res) {
-        console.log("random_categories");
         ds.get_random_category_images(function(category_images) {
             res.jsonp(category_images);
         });

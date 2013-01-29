@@ -131,7 +131,7 @@
       .btn-goto-wikipedia-page {
           background-image: url(/static/Wikipedia-favicon.png);
           height: 25px;
-          width: 70px;
+          width: 73px;
           background-repeat: no-repeat;
           background-position: 2px 2px;
           border-radius: 5px;
@@ -169,7 +169,7 @@
     <div id="article-pin-template" class="pin">
       <a class="pin-click">
         <div class="pin-actions">
-          <input type="button" class="btn-goto-wikipedia-page" value="&nbsp;&nbsp;ikipedia" />
+          <input type="button" class="btn-goto-wikipedia-page" value="&nbsp;&nbsp;&nbsp;ikipedia" />
         </div>
         <div class="title"></div>
         <div class="image"></div>
@@ -525,7 +525,7 @@
 
       function get_wiki_entries_by_prefix(term, cb) {
           $.ajax({
-              url: "//autocomplete.wikipins.org/suggest/",
+              url: "//54.235.121.52/suggest/",
               dataType: 'jsonp',
               data: { q: term.term, n: 10 },
               success: function(data) {

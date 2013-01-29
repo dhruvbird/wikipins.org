@@ -4,6 +4,8 @@ var fs      = require("fs");
 var app     = express();
 var ds      = require("./datastore.js");
 
+var spiderUARE = /facebookexternalhit|googlebot/i;
+
 function serve_static_file(req, res, file_path, encoding) {
     encoding = encoding || 'utf8';
     var index_path = require.resolve(file_path);

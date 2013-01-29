@@ -282,11 +282,13 @@ function get_related_categories_images(title, cb) {
     var connection = get_conn();
 
     connection.query("SELECT CI.category AS category, COALESCE(I.image_name, CI.image) AS image, CL.count AS count, CI.title AS title " +
-                     "FROM categories C, category_images CI, category_list CL, images I " +
-                     "WHERE CI.category=C.category COLLATE utf8_unicode_ci AND " +
-                     "CL.category=C.category COLLATE utf8_unicode_ci AND " +
-                     "REPLACE(CI.image, '_', ' ') = I.image_name AND " +
-                     "C.title=?",
+                     "FROM categories C INNER JOIN category_images CI " +
+                     "ON CI.category=C.category COLLATE utf8_unicode_ci " +
+                     "INNER JOIN category_list CL " +
+                     "ON CL.category=C.category COLLATE utf8_unicode_ci " +
+                     "LEFT OUTER JOIN images I " +
+                     "ON REPLACE(CI.image, '_', ' ') = I.image_name " +
+                     "WHERE C.title=?",
                      [ title ], function(err, rows, fields) {
                          if (err) {
                              console.error(err);

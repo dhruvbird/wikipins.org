@@ -75,11 +75,12 @@ var get_random_category_images = (function(n, delay) {
 function get_multi_category_id_images_and_count(category_ids, cb) {
     var connection = get_conn();
 
-    connection.query("SELECT CI.category AS category, I.image_name AS image, CL.count AS count, CI.title AS title " +
-                     "FROM category_list CL, category_images CI, images I " +
-                     "WHERE CL.category = CI.category AND " +
-                     "I.image_name = REPLACE(CI.image, '_', ' ') " +
-                     "CL.id IN (?) ",
+    connection.query("SELECT CI.category AS category, COALESCE(I.image_name, CI.image) AS image, CL.count AS count, CI.title AS title " +
+                     "FROM category_list CL INNER JOIN category_images CI " +
+                     "ON CL.category = CI.category " +
+                     "LEFT OUTER JOIN images I " +
+                     "ON I.image_name = REPLACE(CI.image, '_', ' ') " +
+                     "WHERE CL.id IN (?) ",
                      [ category_ids ], function(err, rows, fields) {
                          if (err) {
                              console.error(err);

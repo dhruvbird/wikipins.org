@@ -30,7 +30,8 @@ function main() {
     app.set("jsonp callback", true);
 
     app.use(function(req, res, next) {
-        console.log("%s - [%s] - %s - %s", req.ip, String(new Date()), req.method, req.url);
+        var ua = req.headers['user-agent'] ? req.headers['user-agent'] : '';
+        console.log("%s - [%s] - %s - %s - %s", req.ip, String(new Date()), req.method, req.url, ua);
         next();
     });
 

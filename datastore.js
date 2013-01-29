@@ -1,12 +1,15 @@
 var mysql  = require('mysql');
 var _      = require('underscore');
 var config = require('./config.js');
+var LRU    = require("lru-cache")
 
 var imageFileRE = /[^\|]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/i;
 var redundantPrefixRE = /^(Image|File):/i;
 var hexRE = /%[A-Z0-9]{2}/;
 
 var db_name = 'wikipins';
+
+var recently_viewed_articles = LRU({ max: 250 });
 
 function clean_image_name(name) {
     if (name.search(hexRE) != -1) {
@@ -20,6 +23,10 @@ function get_conn() {
     db_config.database = db_name;
     var connection = mysql.createConnection(db_config);
     return connection;
+}
+
+function get_recently_viewed_articles(cb) {
+    cb(recently_viewed_articles.values());
 }
 
 var get_random_category_images = (function(n, delay) {
@@ -53,7 +60,7 @@ var get_random_category_images = (function(n, delay) {
                 return;
             }
             var row_count = rows[0].count;
-            var rids = [ -10 ]; // FIXME
+            var rids = [ -10, -20 ]; // FIXME
             var i;
             for (i = 0; i < n; ++i) {
                 rids.push(Math.floor(Math.random() * row_count));
@@ -69,6 +76,19 @@ var get_random_category_images = (function(n, delay) {
         connection.end();
     };
 })(128, 5 * 60 * 1000); // Cache for 5 minutes.
+
+function concat_recently_viewed(rows, cb) {
+    get_recently_viewed_articles(function(rva) {
+        rva.forEach(function(entry) {
+            entry.category = 'Recently Viewed';
+            delete entry.abstract;
+            entry.count = rva.length;
+        });
+        rows = rows.concat(rva);
+        var res = _.groupBy(rows, 'category');
+        cb(res);
+    });
+}
 
 // Returns a set of up to 8 images for the list of category IDs passed
 // in.
@@ -87,8 +107,13 @@ function get_multi_category_id_images_and_count(category_ids, cb) {
                              cb(category, [ ]);
                              return;
                          }
-                         var res = _.groupBy(rows, 'category');
-                         cb(res);
+                         if (category_ids.indexOf(-20) != -1) {
+                             // Exists
+                             concat_recently_viewed(rows, cb);
+                         } else {
+                             var res = _.groupBy(rows, 'category');
+                             cb(res);
+                         }
                      });
     connection.end();
 }
@@ -113,8 +138,13 @@ function get_multi_category_images_and_count(categories, cb) {
                              cb(category, [ ]);
                              return;
                          }
-                         var res = _.groupBy(rows, 'category');
-                         cb(res);
+                         if (category.indexOf('Recently Viewed') != -1) {
+                             // Exists
+                             concat_recently_viewed(rows, cb);
+                         } else {
+                             var res = _.groupBy(rows, 'category');
+                             cb(res);
+                         }
                      });
     connection.end();
 }
@@ -251,13 +281,25 @@ function get_multi_abstracts_by_title(titles, cb) {
         get_multi_abstracts_by_title_redirect(titles, function(res2) {
             // console.log(res1, res2);
             var u = uniquify_by_key('title', res1, res2);
+            if (u.length < 5) {
+                u.forEach(function(entry) {
+                    recently_viewed_articles.set(entry.title, entry);
+                });
+            }
             cb(u);
         });
     });
 }
 
 // Fetch up to 256 abstracts for a given category.
+//
+// FIXME: Join with the images table
 function get_category_abstracts(category, cb) {
+    if (category.toLowerCase() == 'recently viewed') {
+        get_recently_viewed_articles(cb);
+        return;
+    }
+
     var connection = get_conn();
     connection.query("SELECT A.title AS title, A.abstract AS abstract, A.image AS image " +
                      "FROM categories C INNER JOIN abstracts A " +

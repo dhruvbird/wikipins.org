@@ -17,7 +17,8 @@
     "algorithm-js": "0.0.6",
     "mysql": "~2.0.0-alpha3",
     "express": "~3.0.6",
-    "carrier": "~0.1.8"
+    "carrier": "~0.1.8",
+    "lru-cache": "~2.2.2"
   },
   "devDependencies": {},
   "optionalDependencies": {},

@@ -143,6 +143,7 @@
           width: 160px;
           position: relative;
           top: -20px;
+          font-size: 14px;
       }
       #contact {
           margin-left: 20px;
@@ -152,6 +153,9 @@
       }
       #about-content, #contact-content {
           display: none;
+      }
+      .bold {
+          font-weight: bold;
       }
     </style>
   </head>
@@ -179,11 +183,11 @@
     </div>
 
     <div id="about-content">
-      <p>
+      <p class="bold">
         Q. What do you get when you cross <a href="//en.wikipedia.org/" target="_blank">Wikipedia</a> 
         with <a href="//pinterest.com/" target="_blank">Pinterest</a>?
       </p>
-      <p>
+      <p class="bold">
         A. <a href="/" target="_blank">Wikipins</a>
       </p>
       <p>Wikipins organizes wikipedia categories into pinterest style pins 
@@ -196,6 +200,10 @@
       <p>
         Wikipins is made using node.js and is mostly written in javascript. 
         Wikipins is open source software, and you can find the code on <a href="https://github.com/dhruvbird/wikipins.org" target="_blank">github</a>.
+      </p>
+      <p>
+        Wikipins isn&apos;t associated with Wikipedia or the Wikimedia foundation 
+        even though it uses icons from there.
       </p>
     </div>
 
@@ -634,13 +642,17 @@
 
           $("#about").click(function() {
               $("#about-content").dialog({
-                  title: "About Wikipins"
+                  title: "About Wikipins",
+                  maxWidth: 600,
+                  width: 400
               });
           });
 
           $("#contact").click(function() {
               $("#contact-content").dialog({
-                  title: "Contact"
+                  title: "Contact",
+                  maxWidth: 600,
+                  width: 400
               });
           });
 

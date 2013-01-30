@@ -32,7 +32,7 @@ function get_image_name(title, text) {
             return !!iname;
         });
         if (mi.length > 0) {
-            img = mi[0];
+            img = mi[0].replace(/_/g, ' ');
         }
     }
     return img;

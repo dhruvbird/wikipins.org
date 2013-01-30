@@ -29,6 +29,9 @@ function main() {
         }
     }, 'Serve the wikipins.org site');
 
+    console.error("[%s] Starting the wikipins.org serving engine on port '%s' & db '%s'",
+                  String(new Date()), String(opts.port), String(opts.db));
+
     app.use(function(req, res, next) {
         var ua = req.headers['user-agent'] ? req.headers['user-agent'] : '';
         console.log("%s - [%s] - %s - %s - %s", req.ip, String(new Date()), req.method, req.url, ua);

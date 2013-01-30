@@ -18,7 +18,8 @@
     "mysql": "~2.0.0-alpha3",
     "express": "~3.0.6",
     "carrier": "~0.1.8",
-    "lru-cache": "~2.2.2"
+    "lru-cache": "~2.2.2",
+    "ejs": "~0.8.3"
   },
   "devDependencies": {},
   "optionalDependencies": {},

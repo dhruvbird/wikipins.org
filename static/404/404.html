@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Wikipins - The page you requested can not be found</title>
+    <link rel="shortcut icon" href="/favicon.gif" />
+
+    <style type="text/css">
+      body {
+          background-color: #EEEEEE;
+          font-family: sans-serif;
+          margin: 5px 0px 0px 0px;
+          position: absolute;
+          top: 80px;
+          width: 100%;
+      }
+      #content {
+          width: 400px;
+          height: 400px;
+          margin: auto;
+      }
+      .image-404 {
+          background-image: url(/static/404/<%= image_name %>);
+          width: 400px;
+          height: 400px;
+          background-repeat: no-repeat;
+      }
+      .wrong-url {
+          margin-bottom: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="content">
+      <div class="wrong-url">The URL <%= url %> was not found. Go <a href="javascript:history.go(-1);">back</a></div>
+      <div class="image-404"></div>
+    </div>
+  </body>
+
+</html>

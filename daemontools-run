@@ -3,4 +3,6 @@ cd /root/wikipins.org/
 ACC=/var/log/wikipins/access.log
 ERR=/var/log/wikipins/error.log
 export PATH=/opt/node/bin:$PATH
+# Set max open FDs to 8192
+ulimit -n 8192
 node serve.js --db=wikipins --port=80 >> "$ACC" 2>> "$ERR"

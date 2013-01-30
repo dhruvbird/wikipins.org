@@ -29,13 +29,15 @@ function main() {
         }
     }, 'Serve the wikipins.org site');
 
-    app.set("jsonp callback", true);
-
     app.use(function(req, res, next) {
         var ua = req.headers['user-agent'] ? req.headers['user-agent'] : '';
         console.log("%s - [%s] - %s - %s - %s", req.ip, String(new Date()), req.method, req.url, ua);
         next();
     });
+
+    app.use('/static/', express.static(__dirname + "/static/"));
+
+    app.set("jsonp callback", true);
 
     // /random_categories/
     app.get("/random_categories[/]?", function(req, res) {
@@ -92,8 +94,6 @@ function main() {
             res.jsonp([ ]);
         }
     });
-
-    app.use('/static/', express.static(__dirname + "/static/"));
 
     app.get("/", function(req, res) {
         serve_static_file(req, res, "./static/index.html");

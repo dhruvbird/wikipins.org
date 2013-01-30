@@ -3,9 +3,9 @@
 DROP TABLE IF EXISTS titles;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS enhits;
+DROP TABLE IF EXISTS enallhits;
 
 set session sort_buffer_size = 400 * 1024 * 1024;
-
 
 CREATE TABLE IF NOT EXISTS titles(title VARCHAR(200) NOT NULL,
        KEY (title(50))
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS titles(title VARCHAR(200) NOT NULL,
 
 ALTER TABLE titles DISABLE KEYS;
 
-LOAD DATA LOCAL INFILE 'titles.tsv'
+LOAD DATA LOCAL INFILE 'titles.sorted.tsv'
      INTO TABLE titles
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
@@ -68,7 +68,7 @@ ALTER TABLE enhits ENABLE KEYS;
 
 
 -- Dump the data to a file.
-CREATE TABLE enallhits(title VARCHAR(200) NOT NULL,
+CREATE TABLE IF NOT EXISTS enallhits(title VARCHAR(200) NOT NULL,
        hits INT NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 

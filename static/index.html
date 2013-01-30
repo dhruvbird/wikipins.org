@@ -629,41 +629,7 @@
       function goto_search_location(term) {
       }
 
-      $().ready(function() {
-          $(window).resize(reflow_pins);
-          reflow_pins();
-
-          $(".pin").live('mouseenter', function() {
-              var self = $(this);
-              var pin_actions = self.find(".pin-actions");
-              pin_actions.css('display', 'block');
-              var x = self.position().left;
-              var y = self.position().top;
-              pin_actions.css('top', (y - 50) + "px");
-              pin_actions.css('left', (x + 190) + "px");
-
-          }).live('mouseleave', function() {
-              var self = $(this);
-              var pin_actions = self.find(".pin-actions");
-              pin_actions.css('display', 'none');
-          });
-
-          $("#about").click(function() {
-              $("#about-content").dialog({
-                  title: "About Wikipins",
-                  maxWidth: 600,
-                  width: 400
-              });
-          });
-
-          $("#contact").click(function() {
-              $("#contact-content").dialog({
-                  title: "Contact",
-                  maxWidth: 600,
-                  width: 400
-              });
-          });
-
+      function set_search_box_handlers() {
           var search_box = $("#search-box");
           search_box.data('state', 'initial');
           search_box.addClass('search-box-initial');
@@ -701,11 +667,55 @@
                   // alert("Sorry, not implemented");
               }
           });
+      }
+
+      function set_pin_handlers() {
+          $(".pin").live('mouseenter', function() {
+              var self = $(this);
+              var pin_actions = self.find(".pin-actions");
+              pin_actions.css('display', 'block');
+              var x = self.position().left;
+              var y = self.position().top;
+              pin_actions.css('top', (y - 50) + "px");
+              pin_actions.css('left', (x + 190) + "px");
+
+          }).live('mouseleave', function() {
+              var self = $(this);
+              var pin_actions = self.find(".pin-actions");
+              pin_actions.css('display', 'none');
+          });
+      }
+
+      function set_menu_handlers() {
+          $("#about").click(function() {
+              $("#about-content").dialog({
+                  title: "About Wikipins",
+                  maxWidth: 600,
+                  width: 400
+              });
+          });
+
+          $("#contact").click(function() {
+              $("#contact-content").dialog({
+                  title: "Contact",
+                  maxWidth: 600,
+                  width: 400
+              });
+          });
+      }
+
+      $().ready(function() {
+          $(window).resize(reflow_pins);
+          reflow_pins();
+
+          set_pin_handlers();
+          set_menu_handlers();
+          set_search_box_handlers();
 
           $(window).keyup(function(event) {
               console.log(event);
               if (event.keyCode === 191) {
-                  search_box.trigger('focus');
+                  $("#search-box").trigger('focus');
               }
           });
 
@@ -718,7 +728,8 @@
           var m2 = pathname.match(/^\/a\/([^\/]+)\/?$/);
           if (m1) {
               var category = unescape(m1[1]).replace(/_/g, ' ');
-              console.log("category:", category);
+              // console.log("category:", category);
+              $("title").html(category + " - Wikipins");
               $("#page-title").html('')
                   .append($("<a>Wikipins</a>").attr('href', '/'))
                   .append(" - " + category);
@@ -726,7 +737,8 @@
 
           } else if (m2) {
               var title = unescape(m2[1]).replace(/_/g, ' ');
-              console.log("title:", title);
+              // console.log("title:", title);
+              $("title").html(title + " - Wikipins");
               $("#page-title").html('')
                   .append($("<a>Wikipins</a>").attr('href', '/'))
                   .append(" - " + title);

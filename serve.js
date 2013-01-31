@@ -41,7 +41,8 @@ function main() {
         return iname.search(/\.jpg$/i) != -1;
     });
 
-    template_404 = ejs.compile(fs.readFileSync(require.resolve("./static/404/404.html"), 'utf8'));
+    var template_404 = ejs.compile(fs.readFileSync(require.resolve("./static/404/404.html"), 'utf8'));
+    var template_index = ejs.compile(fs.readFileSync(require.resolve("./static/index.html"), 'utf8'));
 
     app.use(function(req, res, next) {
         var ua = req.headers['user-agent'] ? req.headers['user-agent'] : '';
@@ -110,7 +111,9 @@ function main() {
     });
 
     app.get("/", function(req, res) {
-        serve_static_file(req, res, "./static/index.html");
+        res.send(template_index({
+            title: "Wikipins.org"
+        }));
     });
 
     app.get("/favicon.gif", function(req, res) {
@@ -118,8 +121,12 @@ function main() {
         res.send(fs.readFileSync("./favicon.gif"));
     });
 
-    app.get("/[ac]/[^/]+[/]?", function(req, res) {
-        serve_static_file(req, res, "./static/index.html");
+    app.get("/[ac]/([^/]+)[/]?", function(req, res) {
+        var urlRE = new RegExp("^/[ac]/([^/]+)[/]?$");
+        var title = req.url.match(urlRE)[1];
+        res.send(template_index({
+            title: title + " - Wikipins.org"
+        }));
     });
 
     app.get('*', function(req, res) {

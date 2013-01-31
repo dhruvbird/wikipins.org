@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS enallhits;
 set session sort_buffer_size = 400 * 1024 * 1024;
 
 CREATE TABLE IF NOT EXISTS titles(title VARCHAR(200) NOT NULL,
-       KEY (title(50))
+       KEY (title(60))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci;
 
 ALTER TABLE titles DISABLE KEYS;
@@ -75,14 +75,12 @@ CREATE TABLE IF NOT EXISTS enallhits(title VARCHAR(200) NOT NULL,
 INSERT INTO enallhits(title, hits) 
  SELECT CONCAT('A:', T.title) AS title, COALESCE(EH.hits, 0) AS hits 
  FROM titles T LEFT OUTER JOIN enhits EH 
- ON T.title = EH.title 
- WHERE EH.type = 'A';
+ ON T.title = EH.title AND EH.type = 'A';
 
 INSERT INTO enallhits(title, hits) 
  SELECT CONCAT('C:', C.category) AS title, COALESCE(EH.hits, 0) AS hits 
  FROM categories C LEFT OUTER JOIN enhits EH 
- ON C.category = EH.title 
- WHERE EH.type = 'C';
+ ON C.category = EH.title AND EH.type = 'C';
 
 SELECT hits, convert(title using latin1) INTO OUTFILE '/tmp/enallhits.tsv' FROM enallhits;
 

@@ -321,27 +321,45 @@ function get_category_abstracts(category, cb) {
     connection.end();
 }
 
-function get_related_categories_images(title, cb) {
-    var connection = get_conn();
-
-    connection.query("SELECT CI.category AS category, COALESCE(I.image_name, CI.image) AS image, CL.count AS count, CI.title AS title " +
-                     "FROM categories C INNER JOIN category_images CI " +
-                     "ON CI.category=C.category COLLATE utf8_unicode_ci " +
-                     "INNER JOIN category_list CL " +
-                     "ON CL.category=C.category COLLATE utf8_unicode_ci " +
-                     "LEFT OUTER JOIN images I " +
-                     "ON REPLACE(CI.image, '_', ' ') = I.image_name " +
-                     "WHERE C.title=?",
+function get_final_title(title, connection, cb) {
+    connection.query("SELECT totitle FROM redirects WHERE fromtitle = ? LIMIT 1",
                      [ title ], function(err, rows, fields) {
                          if (err) {
                              console.error(err);
-                             cb([]);
+                             cb(title);
                              return;
                          }
-                         var res = _.groupBy(rows, 'category');
-                         cb(res);
+                         if (rows.length == 0) {
+                             cb(title);
+                             return;
+                         }
+                         cb(rows[0].totitle);
                      });
-    connection.end();
+}
+
+function get_related_categories_images(title, cb) {
+    var connection = get_conn();
+
+    get_final_title(title, connection, function(final_title) {
+        connection.query("SELECT CI.category AS category, COALESCE(I.image_name, CI.image) AS image, CL.count AS count, CI.title AS title " +
+                         "FROM categories C INNER JOIN category_images CI " +
+                         "ON CI.category=C.category COLLATE utf8_unicode_ci " +
+                         "INNER JOIN category_list CL " +
+                         "ON CL.category=C.category COLLATE utf8_unicode_ci " +
+                         "LEFT OUTER JOIN images I " +
+                         "ON REPLACE(CI.image, '_', ' ') = I.image_name " +
+                         "WHERE C.title=?",
+                         [ final_title ], function(err, rows, fields) {
+                             if (err) {
+                                 console.error(err);
+                                 cb([]);
+                                 return;
+                             }
+                             var res = _.groupBy(rows, 'category');
+                             cb(res);
+                         });
+        connection.end();
+    });
 }
 
 function set_db_name(dbname) {

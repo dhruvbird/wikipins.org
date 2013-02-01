@@ -84,6 +84,7 @@ function concat_recently_viewed(rows, limit, cb) {
             // Don't delete the abstract key since another API call will use it.
             entry.count = rva.length;
         });
+        // console.log("Recently Viewed:", rva);
         rows = rows.concat(rva);
         var res = _.groupBy(rows, 'category');
         cb(res);
@@ -283,6 +284,7 @@ function get_multi_abstracts_by_title(titles, cb) {
             var u = uniquify_by_key('title', res1, res2);
             if (u.length < 5) {
                 u.forEach(function(entry) {
+                    // console.log("Setting '%s' as recently viewed", entry.title);
                     recently_viewed_articles.set(entry.title, entry);
                 });
             }

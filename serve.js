@@ -3,12 +3,20 @@ var express = require('express');
 var fs      = require("fs");
 var ejs     = require('ejs');
 var path    = require('path');
+var _       = require('underscore');
+var crypto  = require('crypto');
 var app     = express();
 var ds      = require("./datastore.js");
 
-var spiderUARE = /facebookexternalhit|googlebot/i;
+var spiderUARE = /facebookexternalhit|quora/i;
 var i404 = [ ];
 var i404_idx = 0;
+
+function md5hex(s) {
+    var md5 = crypto.createHash('md5');
+    md5.update(s, 'utf8');
+    return md5.digest('hex');
+}
 
 function serve_static_file(req, res, file_path, encoding) {
     encoding = encoding || 'utf8';
@@ -43,6 +51,7 @@ function main() {
 
     var template_404 = ejs.compile(fs.readFileSync(require.resolve("./static/404/404.html"), 'utf8'));
     var template_index = ejs.compile(fs.readFileSync(require.resolve("./static/index.html"), 'utf8'));
+    var template_spider_index = ejs.compile(fs.readFileSync(require.resolve("./static/spider_index.html"), 'utf8'));
 
     app.use(function(req, res, next) {
         var ua = req.headers['user-agent'] ? req.headers['user-agent'] : '';
@@ -111,9 +120,23 @@ function main() {
     });
 
     app.get("/", function(req, res) {
-        res.send(template_index({
-            title: "Wikipins.org"
-        }));
+        var ua = req.headers['user-agent'] || '';
+        if (ua.search(spiderUARE) == -1) {
+            res.send(template_index({
+                title: "Wikipins.org"
+            }));
+        } else {
+            // Generate an ugly static page.
+            ds.get_random_category_images(function(category_images) {
+                res.send(template_spider_index({
+                    title: "Wikipins.org",
+                    articles: [ ],
+                    categories: category_images,
+                    _: _,
+                md5hex: md5hex
+                }));
+            });
+        }
     });
 
     app.get("/favicon.gif", function(req, res) {
@@ -123,10 +146,30 @@ function main() {
 
     app.get("/[ac]/([^/]+)[/]?", function(req, res) {
         var urlRE = new RegExp("^/[ac]/([^/]+)[/]?$");
-        var title = req.url.match(urlRE)[1];
-        res.send(template_index({
-            title: title + " - Wikipins.org"
-        }));
+        var catReq = req.url.search(/^\/c\//) === 0;
+        var title = unescape(req.url.match(urlRE)[1].replace(/_/g, ' '));
+        var proc = 'get_multi_abstracts_by_title';
+        var ua = req.headers['user-agent'] || '';
+
+        if (catReq) {
+            proc = 'get_category_abstracts';
+        }
+
+        if (ua.search(spiderUARE) == -1) {
+            res.send(template_index({
+                title: title + " - Wikipins.org"
+            }));
+        } else {
+            ds[proc](title, function(abstracts) {
+                res.send(template_spider_index({
+                    title: title + " - Wikipins.org",
+                    articles: abstracts,
+                    categories: [ ],
+                    _: _,
+                    md5hex: md5hex
+                }));
+            });
+        }
     });
 
     app.get('*', function(req, res) {

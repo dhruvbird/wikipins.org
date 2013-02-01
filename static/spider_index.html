@@ -8,14 +8,15 @@
     <div id="content">
 
       <% articles.forEach(function(article) { 
-          var imd5 = md5hex(article.image);
+          var image = article.image.replace(/ /g, '_');
+          var imd5  = md5hex(image);
           var imd5_url = imd5[0] + "/" + imd5.substr(0, 2);
-          var url = "/a/" + escape(article.title.replace(/ /g, '_'));
+          var url   = "/a/" + escape(article.title.replace(/ /g, '_'));
          %>
       <div class="article">
         <a class="article-title" href="<%= url %>"><%= article.title %></a>
-        <img src="http://upload.wikimedia.org/wikipedia/commons/<%= imd5_url %>/<%= article.image %>" />
-        <img src="http://upload.wikimedia.org/wikipedia/en/<%= imd5_url %>/<%= article.image %>" />
+        <img src="http://upload.wikimedia.org/wikipedia/commons/<%= imd5_url %>/<%= image %>" />
+        <img src="http://upload.wikimedia.org/wikipedia/en/<%= imd5_url %>/<%= image %>" />
         <span class="article-abstract"><%= article.abstract %></span>
       </div>
       <% }) %>

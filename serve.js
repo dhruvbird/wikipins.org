@@ -29,6 +29,25 @@ function serve_static_file(req, res, file_path, encoding) {
     index_stream.pipe(res);
 }
 
+_.mixin({
+    zipToObject: function(keys) {
+        var arrays = Array.prototype.slice.call(arguments, 1);
+        var ret = [ ];
+        if (arrays.length < 1) {
+            return [ ];
+        }
+        var i, j;
+        for (i = 0; i < arrays[0].length; ++i) {
+            var o = { };
+            for (j = 0; j < keys.length; ++j) {
+                o[keys[j]] = arrays[j][i];
+            }
+            ret.push(o);
+        }
+        return ret;
+    }
+});
+
 function main() {
     var opts = require('tav').set({
         'db': {

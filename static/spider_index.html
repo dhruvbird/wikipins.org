@@ -8,11 +8,12 @@
     <div id="content">
 
       <% articles.forEach(function(article) { 
-         var imd5 = md5hex(article.image);
-         var imd5_url = imd5[0] + "/" + imd5.substr(0, 2);
+          var imd5 = md5hex(article.image);
+          var imd5_url = imd5[0] + "/" + imd5.substr(0, 2);
+          var url = "/a/" + escape(article.title.replace(/ /g, '_'));
          %>
       <div class="article">
-        <span class="article-title"><%= article.title %></span>
+        <a class="article-title" href="<%= url %>"><%= article.title %></a>
         <img src="http://upload.wikimedia.org/wikipedia/commons/<%= imd5_url %>/<%= article.image %>" />
         <img src="http://upload.wikimedia.org/wikipedia/en/<%= imd5_url %>/<%= article.image %>" />
         <span class="article-abstract"><%= article.abstract %></span>
@@ -20,18 +21,21 @@
       <% }) %>
 
       <% Object.keys(categories).forEach(function(category_name) {
-          var category = categories[category_name].slice(0, 4);
-          if (category.length == 0) {
+          var item = categories[category_name].slice(0, 4);
+          if (item.length == 0) {
               return;
           }
-          var images   = _.pluck(category, 'image');
+          var images = _.zipToObject(['title', 'image'],
+                                     _.pluck(item, 'title'),
+                                     _.pluck(item, 'image'));
+          var url   = "/c/" + escape(item[0].category.replace(/ /g, '_'));
          %>
       <div class="category">
-        <span class="category-title"><%= category[0].title %></span>
+        <a class="category-title" href="<%= url %>"><%= item[0].title %></a>
 
-        <% images.forEach(function(image) {
-            image = image.replace(/ /g, '_');
-            var imd5 = md5hex(image);
+        <% images.forEach(function(iinfo) {
+            var image = iinfo.image.replace(/ /g, '_');
+            var imd5  = md5hex(image);
             var imd5_url = imd5[0] + "/" + imd5.substr(0, 2);
          %>
         <img src="http://upload.wikimedia.org/wikipedia/commons/<%= imd5_url %>/<%= image %>" />

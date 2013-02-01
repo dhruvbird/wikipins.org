@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel="shortcut icon" href="/favicon.gif" />
+  </head>
+  <body>
+    <div id="content">
+
+      <% articles.forEach(function(article) { 
+         var imd5 = md5hex(article.image);
+         var imd5_url = imd5[0] + "/" + imd5.substr(0, 2);
+         %>
+      <div class="article">
+        <span class="article-title"><%= article.title %></span>
+        <img src="http://upload.wikimedia.org/wikipedia/commons/<%= imd5_url %>/<%= article.image %>" />
+        <img src="http://upload.wikimedia.org/wikipedia/en/<%= imd5_url %>/<%= article.image %>" />
+        <span class="article-abstract"><%= article.abstract %></span>
+      </div>
+      <% }) %>
+
+      <% Object.keys(categories).forEach(function(category_name) {
+          var category = categories[category_name].slice(0, 4);
+          if (category.length == 0) {
+              return;
+          }
+          var images   = _.pluck(category, 'image');
+         %>
+      <div class="category">
+        <span class="category-title"><%= category[0].title %></span>
+
+        <% images.forEach(function(image) {
+            image = image.replace(/ /g, '_');
+            var imd5 = md5hex(image);
+            var imd5_url = imd5[0] + "/" + imd5.substr(0, 2);
+         %>
+        <img src="http://upload.wikimedia.org/wikipedia/commons/<%= imd5_url %>/<%= image %>" />
+        <img src="http://upload.wikimedia.org/wikipedia/en/<%= imd5_url %>/<%= image %>" />
+        <% }) %>
+      </div>
+      <% }) %>
+
+    </div>
+  </body>
+</html>
+

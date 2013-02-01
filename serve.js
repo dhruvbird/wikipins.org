@@ -8,7 +8,7 @@ var crypto  = require('crypto');
 var app     = express();
 var ds      = require("./datastore.js");
 
-var spiderUARE = /facebookexternalhit|quora/i;
+var spiderUARE = /facebookexternalhit|quora|pinterest|baidu|yandex/i;
 var i404 = [ ];
 var i404_idx = 0;
 

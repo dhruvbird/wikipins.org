@@ -9,7 +9,7 @@ var acendpoint = '';
 
 function make_ac_request(url, params, cb) {
     url += "?" + qs.stringify(params);
-    console.log("url", url);
+    // console.log("url", url);
     request.get(url, function(error, response, body) {
         if (error || response.statusCode != 200) {
             console.error(error);

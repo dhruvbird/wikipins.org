@@ -4,6 +4,8 @@ if (!window.console) {
                      };
 }
 
+var searchInProgress = false;
+
 _.mixin({
     zipToObject: function(keys) {
         var arrays = Array.prototype.slice.call(arguments, 1);
@@ -331,6 +333,23 @@ function load_category_pins(url, parent) {
     });
 }
 
+function load_query_pins(query, parent) {
+    $.ajax({
+        url: "/search/",
+        dataType: 'jsonp',
+        data: {
+            q: query
+        },
+        success: function(results) {
+            console.log("results:", results);
+            var suggestions = results.suggestions;
+            var abstracts   = results.abstracts;
+
+            populate_article_pins_on_page(abstracts, parent);
+        }
+    });
+}
+
 function get_wiki_entries_by_prefix(term, cb) {
     $.ajax({
         url: "//autocomplete.wikipins.org/suggest/",
@@ -409,8 +428,14 @@ function set_search_box_handlers() {
     */
 
     search_box.keyup(function(event) {
-        if (event.keyCode == 13) {
+        if (event.keyCode == 13 && !searchInProgress) {
             // alert("Sorry, not implemented");
+            // console.log("KEYUP");
+            var val = jQuery.trim(search_box.val());
+            if (!val) {
+                return;
+            }
+            window.location = "/s/" + escape(val);
         }
     });
 }
@@ -472,6 +497,7 @@ $().ready(function() {
     var pathname = window.location.pathname;
     var m1 = pathname.match(/^\/c\/([^\/]+)\/?$/);
     var m2 = pathname.match(/^\/a\/([^\/]+)\/?$/);
+    var m3 = pathname.match(/^\/s\/([^\/]+)\/?$/);
     if (m1) {
         var category = unescape(m1[1]).replace(/_/g, ' ');
         // console.log("category:", category);
@@ -489,6 +515,13 @@ $().ready(function() {
         load_single_article_pin(title, $("#content"));
         load_related_category_pins(title, $("#content2"));
         $("#content2").css('display', 'block');
+    } else if (m3) {
+        var query = unescape(m3[1]);
+        console.log("query:", query);
+        $('#page-title').html('')
+            .append($("<a>Wikipins</a>").attr('href', '/'))
+            .append(" - " + query);
+        load_query_pins(query, $("#content"));
     } else {
         load_category_pins("/random_categories/", $("#content"));
     }
@@ -502,11 +535,16 @@ $().ready(function() {
         source: get_wiki_entries_by_prefix,
         select: function(event, ui) {
             var item = ui.item;
+            // console.log("ITEM", item);
+            searchInProgress = true;
             if (item.label.search(/\(category\)$/) != -1) {
                 window.location = "/c/" + escape(item.value.replace(/\ /g, '_'));
             } else {
                 window.location = "/a/" + escape(item.value.replace(/\ /g, '_'));
             }
+        },
+        close: function(event, ui) {
+            // console.log("CLOSED");
         }
     });
 });

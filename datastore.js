@@ -1,7 +1,9 @@
-var mysql  = require('mysql');
-var _      = require('underscore');
-var config = require('./config.js');
-var LRU    = require("lru-cache")
+var mysql   = require('mysql');
+var _       = require('underscore');
+var config  = require('./config.js');
+var LRU     = require('lru-cache');
+var qs      = require('querystring');
+var request = require('request');
 
 var imageFileRE = /[^\|]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/i;
 var redundantPrefixRE = /^(Image|File):/i;
@@ -364,6 +366,66 @@ function get_related_categories_images(title, cb) {
     });
 }
 
+function search(query, cb) {
+    /* http://en.wikipedia.org/w/api.php?action=query&list=search&srwhat=text&srsearch=QUERY&srwhat=text&srprop=snippet&srlimit=50&format=json */
+    var qs = {
+        action: 'query',
+        list: 'search',
+        srwhat: 'text',
+        srsearch: query,
+        srprop: 'snippet',
+        srlimit: 50, /* Show up to 50 results. This is the max. that the API allows us. */
+        format: 'json'
+    };
+
+    var url = "http://en.wikipedia.org/w/api.php";
+    // console.log("query:", query);
+    // console.log("url:", url);
+    request({
+        url: url,
+        qs:  qs,
+        headers: {
+            'User-Agent': 'Wikipins Admin <dhruvbird+wikipins@gmail.com>'
+        }
+    }, function(error, response, body) {
+        // console.log("body:", body);
+        if (error || response.statusCode != 200) {
+            console.error(response.statusCode, error);
+            cb({ });
+            return;
+        }
+        var jbody = { };
+        try { jbody = JSON.parse(body); } catch(ex) {
+            console.error(ex.stack);
+        }
+        // console.log("jbody:", jbody);
+        if (!jbody.hasOwnProperty('query')) {
+            cb({ });
+            return;
+        }
+        var suggestion = '';
+        if (jbody.query.searchinfo && jbody.query.searchinfo.suggestion) {
+            suggestion = jbody.query.searchinfo.suggestion;
+        }
+        if (jbody.query.search) {
+            var titles = _.pluck(jbody.query.search, 'title');
+            get_multi_abstracts_by_title(titles, function(abstracts) {
+                cb({
+                    suggestion: suggestion,
+                    abstracts: abstracts
+                });
+            });
+        } else {
+            cb({
+                suggestion: suggestion,
+                abstracts: [ ]
+            });
+
+        } // if (jbody.query.search)
+
+    }); // request.get()
+}
+
 function set_db_name(dbname) {
     db_name = dbname;
 }
@@ -429,3 +491,4 @@ exports.get_random_category_images          = get_random_category_images;
 exports.set_db_name                         = set_db_name;
 exports.get_category_abstracts              = get_category_abstracts;
 exports.get_related_categories_images       = get_related_categories_images;
+exports.search                              = search;

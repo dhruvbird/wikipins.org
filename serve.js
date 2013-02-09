@@ -163,23 +163,24 @@ function main() {
         res.send(fs.readFileSync("./favicon.gif"));
     });
 
-    app.get("/[ac]/([^/]+)[/]?", function(req, res) {
-        var urlRE = new RegExp("^/[ac]/([^/]+)[/]?$");
-        var catReq = req.url.search(/^\/c\//) === 0;
+    app.get("/[sac]/([^/]+)[/]?", function(req, res) {
+        var urlRE = new RegExp("^/[sac]/([^/]+)[/]?$");
+        var reqType = req.url[1];
         var title = unescape(req.url.match(urlRE)[1].replace(/_/g, ' '));
-        var proc = 'get_multi_abstracts_by_title';
+        var proc = {
+            'a': 'get_multi_abstracts_by_title',
+            'c': 'get_category_abstracts',
+            's': 'search'
+        }[reqType];
         var ua = req.headers['user-agent'] || '';
-
-        if (catReq) {
-            proc = 'get_category_abstracts';
-        }
 
         if (ua.search(spiderUARE) == -1) {
             res.send(template_index({
                 title: title + " - Wikipins.org"
             }));
         } else {
-            ds[proc](title, function(abstracts) {
+            ds[proc](title, function(response) {
+                var abstracts = (reqType == 's' ? response.abstracts : response);
                 res.send(template_spider_index({
                     title: title + " - Wikipins.org",
                     articles: abstracts,
@@ -189,6 +190,20 @@ function main() {
                 }));
             });
         }
+    });
+
+    // Search for something in wikitext.
+    //
+    // /search/?q=QUERY
+    app.get("/search[/]?", function(req, res) {
+        var q = unescape(req.query.q || '').trim();
+        if (!q) {
+            res.jsonp({ });
+            return;
+        }
+        ds.search(q, function(results) {
+            res.jsonp(results);
+        });
     });
 
     app.get('*', function(req, res) {

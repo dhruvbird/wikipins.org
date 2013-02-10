@@ -342,9 +342,15 @@ function load_query_pins(query, parent) {
         },
         success: function(results) {
             console.log("results:", results);
-            var suggestions = results.suggestions;
-            var abstracts   = results.abstracts;
+            var suggestion = results.suggestion;
+            var abstracts  = results.abstracts;
 
+            if (suggestion) {
+                $("#suggestion a")
+                    .attr('href', '/s/' + escape(suggestion))
+                    .html(suggestion);
+                $("#suggestion").show();
+            }
             populate_article_pins_on_page(abstracts, parent);
         }
     });

@@ -142,17 +142,17 @@ function main() {
         var ua = req.headers['user-agent'] || '';
         if (ua.search(spiderUARE) == -1) {
             res.send(template_index({
-                title: "Wikipins.org"
+                title: "Wikipins.org - A visual wikipedia navigation experience!"
             }));
         } else {
             // Generate an ugly static page.
             ds.get_random_category_images(function(category_images) {
                 res.send(template_spider_index({
-                    title: "Wikipins.org",
+                    title: "Wikipins.org - A visual wikipedia navigation experience!",
                     articles: [ ],
                     categories: category_images,
                     _: _,
-                md5hex: md5hex
+                    md5hex: md5hex
                 }));
             });
         }
@@ -180,7 +180,11 @@ function main() {
             }));
         } else {
             ds[proc](title, function(response) {
-                var abstracts = (reqType == 's' ? response.abstracts : response);
+                var abstracts = response;
+                if (reqType === 's') {
+                    abstracts = response.abstracts;
+                }
+
                 res.send(template_spider_index({
                     title: title + " - Wikipins.org",
                     articles: abstracts,

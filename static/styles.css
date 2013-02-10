@@ -141,3 +141,10 @@ div.vspacer {
 .bold {
     font-weight: bold;
 }
+#suggestion {
+    display: none;
+    margin: 0px 0px 15px 40px;
+}
+#suggestion a {
+    font-weight: bold;
+}

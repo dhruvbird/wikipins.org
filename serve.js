@@ -72,6 +72,8 @@ function main() {
     var template_index = ejs.compile(fs.readFileSync(require.resolve("./static/index.html"), 'utf8'));
     var template_spider_index = ejs.compile(fs.readFileSync(require.resolve("./static/spider_index.html"), 'utf8'));
 
+    ds.init();
+
     app.use(function(req, res, next) {
         var ua = req.headers['user-agent'] ? req.headers['user-agent'] : '';
         console.log("%s - [%s] - %s - %s - %s", req.ip, String(new Date()), req.method, req.url, ua);

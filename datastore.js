@@ -1,8 +1,10 @@
 var mysql   = require('mysql');
+var path    = require('path');
 var _       = require('underscore');
 var config  = require('./config.js');
 var LRU     = require('lru-cache');
 var qs      = require('querystring');
+var fs      = require('fs');
 var request = require('request');
 
 var imageFileRE = /[^\|]+\.(jpg|jpeg|bmp|png|gif|yuv|svg|tiff|jps)/i;
@@ -10,6 +12,7 @@ var redundantPrefixRE = /^(Image|File):/i;
 var hexRE = /%[A-Z0-9]{2}/;
 
 var db_name = 'wikipins';
+var recently_viewed_json_path = path.join(path.dirname(__filename), 'data/recently_viewed.json');
 
 var recently_viewed_articles = LRU({ max: 250 });
 
@@ -434,6 +437,14 @@ function set_db_name(dbname) {
     db_name = dbname;
 }
 
+function on_process_exit() {
+    get_recently_viewed_articles(function(rva) {
+        var rvfile = fs.openSync(recently_viewed_json_path, 'w');
+        fs.writeFileSync(recently_viewed_json_path, JSON.stringify(rva, null, '    '), 'utf8');
+        process.exit(0);
+    });
+}
+
 function test(which) {
     if (which.get_multi_abstracts_by_title) {
         get_multi_abstracts_by_title(which.get_multi_abstracts_by_title, function(abstracts) {
@@ -486,6 +497,20 @@ if (require.main === module) {
     });
 }
 
+function init() {
+    var rvstr = fs.readFileSync(recently_viewed_json_path, 'utf8');
+    var rva = [ ];
+    try {
+        rva = JSON.parse(rvstr);
+    } catch(ex) { }
+    rva.reverse().forEach(function(entry) {
+        recently_viewed_articles.set(entry.title, entry);
+    });
+    process.on('SIGTERM', on_process_exit);
+    process.on('SIGINT', on_process_exit);
+}
+
+exports.init                                = init;
 exports.get_related_categories              = get_related_categories;
 exports.get_multi_abstracts_by_title        = get_multi_abstracts_by_title;
 exports.get_category_titles                 = get_category_titles;

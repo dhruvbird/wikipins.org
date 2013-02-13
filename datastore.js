@@ -88,7 +88,7 @@ function entry_has_image(entry) {
 
 function concat_recently_viewed(rows, limit, cb) {
     get_recently_viewed_articles(function(rva) {
-        rva = rva.filter(entry_has_image).slice(0, limit);
+        rva = rva.filter(entry_has_image).slice(0, limit+2);
         rva.forEach(function(entry) {
             entry.category = 'Recently Viewed';
             // Don't delete the abstract key since another API call will use it.

@@ -79,9 +79,13 @@ var get_random_category_images = (function(n, delay) {
     };
 })(128, 30 * 1000); // Cache for 30 second.
 
+function entry_has_image(entry) {
+    return !!entry.image;
+}
+
 function concat_recently_viewed(rows, limit, cb) {
     get_recently_viewed_articles(function(rva) {
-        rva.slice(0, limit).forEach(function(entry) {
+        rva = rva.filter(entry_has_image).slice(0, limit).forEach(function(entry) {
             entry.category = 'Recently Viewed';
             // Don't delete the abstract key since another API call will use it.
             entry.count = rva.length;

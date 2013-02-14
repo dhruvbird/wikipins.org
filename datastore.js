@@ -110,7 +110,7 @@ function get_multi_category_id_images_and_count(category_ids, cb) {
                      "FROM category_list CL INNER JOIN category_images CI " +
                      "ON CL.category = CI.category " +
                      "LEFT OUTER JOIN images I " +
-                     "ON I.image_name = REPLACE(CI.image, '_', ' ') " +
+                     "ON I.image_name = CI.image " +
                      "WHERE CL.id IN (?) ",
                      [ category_ids ], function(err, rows, fields) {
                          if (err) {
@@ -225,7 +225,7 @@ function get_multi_abstracts_by_title_redirect(titles, cb) {
     var connection = get_conn();
     connection.query("SELECT A.title AS title , A.abstract AS abstract, COALESCE(I.image_name, A.image) AS image " +
                      "FROM abstracts A LEFT OUTER JOIN images I " +
-                     "ON REPLACE(A.image, '_', ' ') = I.image_name " +
+                     "ON A.image = I.image_name " +
                      "INNER JOIN redirects R " +
                      "ON R.totitle COLLATE utf8_unicode_ci = A.title " +
                      "WHERE R.fromtitle IN (?)",
@@ -255,7 +255,7 @@ function get_multi_abstracts_by_title_noredirect(titles, cb) {
     var connection = get_conn();
     connection.query("SELECT A.title AS title, A.abstract AS abstract, COALESCE(I.image_name, A.image) AS image " +
                      "FROM abstracts A LEFT OUTER JOIN images I " +
-                     "ON I.image_name = REPLACE(A.image, '_', ' ') " +
+                     "ON I.image_name = A.image " +
                      "WHERE A.title IN (?)",
                      [ titles ], function(err, rows, fields) {
                          if (err) {
@@ -359,7 +359,7 @@ function get_related_categories_images(title, cb) {
                          "INNER JOIN category_list CL " +
                          "ON CL.category=C.category COLLATE utf8_unicode_ci " +
                          "LEFT OUTER JOIN images I " +
-                         "ON REPLACE(CI.image, '_', ' ') = I.image_name " +
+                         "ON CI.image = I.image_name " +
                          "WHERE C.title=?",
                          [ final_title ], function(err, rows, fields) {
                              if (err) {

@@ -25,7 +25,7 @@ then
     sort -S 300M -f image_commons.tsv > image_commons.sorted.tsv
 
     # Join with images in commons
-    join -i --check-order referenced_images.sorted.tsv image_commons.sorted.tsv > image_commons.importable.tsv
+    join -t "$TAB" -i --check-order referenced_images.sorted.tsv image_commons.sorted.tsv > image_commons.importable.tsv
 else
     truncate --size=0 image_commons.importable.tsv
 fi

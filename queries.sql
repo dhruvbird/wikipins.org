@@ -111,10 +111,10 @@ LOAD DATA LOCAL INFILE 'image.tsv' IGNORE
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
 
--- LOAD DATA LOCAL INFILE 'image_commons.sorted.tsv' IGNORE
---      INTO TABLE images
---      FIELDS TERMINATED BY '\t'
---      LINES TERMINATED BY '\n';
+LOAD DATA LOCAL INFILE 'images_commons.importable.tsv' IGNORE
+     INTO TABLE images
+     FIELDS TERMINATED BY '\t'
+     LINES TERMINATED BY '\n';
 
 -- Load popular articles into the DB
 --

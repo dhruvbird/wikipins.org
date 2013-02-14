@@ -19,16 +19,16 @@ sort -k 1 -t "$TAB" -S 300M cimage.tsv | python ../uniq_limit.py > cimage.reduce
 if [ -e image_commons.tsv ]
 then
     # Get list of image names used
-    cut -d "$TAB" -f 3 abstract.tsv | sort -f -S 300M | uniq | grep -v "^\s*$" > referenced_images.sorted.tsv
+    cut -d "$TAB" -f 3 abstract.tsv | sed "s/^\s*//" | sed "s/\s*$//" | grep -v "^\s*$" | sort -f -S 300M | uniq > referenced_images.sorted.tsv
 
     # Sort image_commons.tsv
     sort -S 300M -f image_commons.tsv > image_commons.sorted.tsv
 
     # Join with images in commons
-    join -i --check-order referenced_images.sorted.tsv image_commons.sorted.tsv > images_commons.importable.tsv
+    join -i --check-order referenced_images.sorted.tsv image_commons.sorted.tsv > image_commons.importable.tsv
 else
-    truncate --size=0 images_commons.importable.tsv
+    truncate --size=0 image_commons.importable.tsv
 fi
 
 ICI_LINES=`wc -l images_commons.importable.tsv`
-echo "images_commons.importable.tsv has ${ICI_LINES} lines"
+echo "image_commons.importable.tsv has ${ICI_LINES} lines"

@@ -111,7 +111,7 @@ LOAD DATA LOCAL INFILE 'image.tsv' IGNORE
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
 
-LOAD DATA LOCAL INFILE 'images_commons.importable.tsv' IGNORE
+LOAD DATA LOCAL INFILE 'image_commons.importable.tsv' IGNORE
      INTO TABLE images
      FIELDS TERMINATED BY '\t'
      LINES TERMINATED BY '\n';
